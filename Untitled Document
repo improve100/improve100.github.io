@@ -1,0 +1,534 @@
+Apache HTTP Server 基础（一）
+2014-07-29 12:49:28
+标签：配置文件 区分大小写 虚拟主机 Apache
+原创作品，允许转载，转载时请务必以超链接形式标明文章 原始出处 、作者信息和本声明。否则将追究法律责任。http://skypegnu1.blog.51cto.com/8991766/1532126
+一、Apache简介与特性
+
+     Apache HTTP Server（简称Apache）是Apache软件基金会开发的一个开放源码的网页服务器，由于其多平台和安全性被广泛使用，是最流行的Web服务器端软件之一（可以说是web服务器的规范）。Apache的特点是简单、速度快、性能稳定，并可做代理服务器来使用。
+      Apache Web服务器软件拥有以下特性： 
+支持最新的HTTP/1.1协议 
+模块化设计，核心非常小，各种功能都通过模块添加，支持运行时配置，支持单独编译模块
+拥有简单而强有力的基于文件的配置过程 
+支持通用网关接口（CGI）
+支持多种形式的虚拟主机配置 
+支持多种方式的HTTP认证 
+支持实时监视服务器状态和定制服务器日志
+支持服务器端包含指令(SSI) ， 支持安全Socket层(SSL)
+提供用户会话过程的跟踪 
+支持FastCGI 
+支持每目录的访问控制
+支持URL重写
+
+二、其他流行的web服务器
+
+    不可否认，Apache是一个优秀的全能Web服务器，但对于那些需要更强大的Web应用服务器（比如大小、可定制、响应速度、可扩展性等方面）的人而言，Apache明显不符合他们的要求，寻找Apache的替代者是更好的选择。
+    下面所列出的是当前可以替代Apache的几个热门Web应用服务器，他们的特点和适用的应用场景各不相同，但都是针对Apache所不够擅长的某一方面设计的。但是就其稳定性，特性支持，功能性而言，apache是当之无愧的老大。
+1、Lighttpd
+    最流行的Apache服务器替代者，Lighttpd是一个单线程的针对大量持续连接做出专门优化的Web服务器（这正是多数高流量网站和应用程序需要的）。众多的流行Web站点选择Lighttpd，包括Youtube、SourceForge和维基百科。Lighttpd支持FastCGI、HTTP服务器端压缩、mod-rewrite和其他众多有用的功能。尽管Lighttpd拥有Apache的绝大多数功能，但它仍然保持轻量级（仅1MB）并且可以与Apache使用相同的配置。 
+2、Nginx
+    Nginx是一个来自俄罗斯的流行的Web应用服务器，它被应用于大量的俄罗斯的高并发站点，俄罗斯的搜索引擎网站Rambler就是基于Nginx构建的。Nginx对静态页面的支持相当出色，轻量且免费。Nginx不支持CGI，但是支持更灵活的FastCGI。
+
+三、apache httpd （httpd 2.2）安装和基本概述
+
+httpd 安装通常有两种方式：
+通过 yum 安装，优点：安装过程简单；缺点：可能编译了不需要的模块，或者没有编译自己需要的模块，而且其版本都比较老。
+通过源码编译安装，优点：灵活，可定制型强；缺点：较为复杂，而且编译时间比较长
+    这里纯粹是为了学习，所以就偷懒，直接用 yum 一下就搞定，如果是生产环境，就不要这么草率了。在安装之前，先关闭iptables, SELinux，以免造成一些麻烦。 
+
+## 先关闭 iptables,以及 SELinux
+# service iptables stop
+# chkconfig iptables off
+ 
+# setenforce 0
+# sed 's/SELINUX=enforcing/SELINUX=disabled/' /etc/sysconfig/selinux
+ 
+## 安装 httpd
+# yum -y install httpd
+ 
+## 启动 httpd 服务，并加入开机自启动
+# service httpd start
+# netstat -tulpn | grep httpd
+tcp        0      0 :::80     :::*          LISTEN      1544/httpd 
+ 
+# ps -ef | grep httpd
+root      1544     1  0 18:27 ?        00:00:00 /usr/sbin/httpd    ## 注意这里的不同
+apache    1546  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1547  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1548  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1549  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1550  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1551  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1552  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+apache    1553  1544  0 18:27 ?        00:00:00 /usr/sbin/httpd
+  好了，我们可以看到我们的httpd已经在后台运行，等待接受用户请求。这里我们就继续介绍一下与 httpd 相关的文件和目录配置。
+/usr/sbin/httpd    是httpd的可执行二进制文件，Apache/2.2.x (Unix) 默认的 MPM 为 prefork,  所以会创建多个进程。什么是prefork 后面会单独一篇博文来介绍。
+httpd： root, root   以root身份运行的进程，叫做 master process, 它不负责响应用户请求，只负责创建和销毁 work process。相当于一个指挥，让其他人去做事，自己管理好这些人就好了。为什么必须要root用户呢？因为httpd默认监听在80端口，而要 bind 在小于 1024端口上，必须要root权限才行。httpd常见的2个端口号（80/tcp,  443/tcp）
+httpd：apache, apache    以apache身份运行的进程，叫做 work process， 真正负责处理请求，响应http请求。
+/etc/init.d/httpd    httpd的服务启动脚本。
+/etc/httpd             工作目录， ServerRoot 指令设置，建议不要修改ServerRoot选项，很多配置都是相对于这个目录
+/etc/httpd/conf,   /etc/httpd/conf.d/*.conf        主配置文件，以及扩展配置文件
+/etc/httpd/modules        模块目录（链接）
+/etc/httpd/logs               日志文件（链接），访问日志：access_log, 错误日志： error_log
+/var/www                        网页文件目录（DocumentRoot）
+
+四、httpd.conf 主配置文件
+
+    通过yum安装的httpd，默认情况下其主配置文件为/etc/httpd/conf/httpd.conf,  以及/etc/httpd/conf.d/*.conf。
+配置文件主要有三部分组成:
+
+[root@localhost ~]# grep 'Section' /etc/httpd/conf/httpd.conf 
+### Section 1: Global Environment
+### Section 2: 'Main' server configuration
+### Section 3: Virtual Hosts
+wKioL1U8_H2wOq1fAAF39XXaghI693.jpg
+Global Environment              全局环境配置，决定Apache服务器的全局参数
+Main server configuration    主服务配置，相当于是Apache中的默认Web站点，如果我们的服务器中只有一个站点，那么就只需在这里配置就可以了。
+Virtual Hosts        虚拟主机，虚拟主机不能与Main Server主服务器共存，当启用了虚拟主机之后，Main Server就不能使用了
+注意：Section2 和 Section3不能同时生效，默认启用的是Section2。配置Section2：意味着只启用中心主机，必须禁用虚拟主机。配置Section3：意味着启动虚拟主机。 中心主机和虚拟主机不能同时使用。
+
+配置文件的语法
+    配置文件由 Directives arguments 组成，指令是不区分大小写的，但是约定，指令单词的首字母大写。但参数可能会区分大小写，而且有些指令可以重复使用多次。
+    以#开头的行为注释信息， #号之后没有空格的为指令，取消注释即可生效。
+配置文件的语法测试
+
+[root@localhost ~]# service httpd configtest    # 实际上就是调用 httpd -t
+OR
+[root@localhost ~]# httpd -t                    # 建议在修改配置后，都执行一次
+ 
+[root@localhost ~]# service httpd reload    # 重新读取配置文件
+[root@localhost ~]# service httpd restart   # 重启服务
+注意：大多数配置修改后，使用 service httpd reload 即可生效；但是修改了监听地址和端口则需要重启服务才能生效。
+各个指令的详细含义，可以通过 http://httpd.apache.org/docs/2.4/mod/directives.html 查看。
+
+1、设置监听地址和端口
+语法： Listen  [IP:]PORT
+    配置 Apache HTTP Server监听在特定的address和port上。 默认情况下，监听在所有地址的80端口。
+
+Listen 80            # 监听在本机所有网卡的80端口
+Listen 192.168.11.101:8080   # 只监听192.168.11.101网卡的8080端口
+ 
+##  The Listen directive tells the server to accept incoming requests onlyon the specified port(s) or address-and-port combinations. 
+ 
+# If only a port number is specified in the Listen directive, the server listens to the given port on allinterfaces. 
+ 
+# If an IP address is given as well as a port,the server will listen on the given port and interface. 
+ 
+# Multiple Listen directives may be used to specify a number of addresses andports to listen on. The server will respond to requests from any of the listedaddresses and ports.
+注意：Listen指令可以重复使用，如果需要监听多个端口，则必须写多行Listen指令
+
+2、配置服务器HTTP响应头
+语法：ServerTokens  Major|Minor|Minimal|ProductOnly|OS|Full
+说明：此指令控制Server回送给客户端的响应头域是否包含关于服务器相关的描述信息。
+wKiom1PXBjzz1L7uAADvJVWEepY584.jpg
+注意：此设置将作用于整个服务器，而且不能在虚拟主机的层次启用或禁用。
+
+3、设置连接超时与长连接
+    Timeout  这个超时参数只是前后两次tcp传输包的间隔(指两个tcp包之间的超时时间.),如果大于这个间隔,apache就主动关闭tcp连接.　http://blog.chinaunix.net/uid-18868906-id-3952394.html
+1
+Timeout 60
+    KeepAlive配置的含义：对于HTTP/1.1的客户端来说，将会尽量的保持客户的HTTP连接，通过一个连接传送多份HTTP请求响应。这样对于客户端来说，可以提高50%左右的响应时间，而于服务器端来说则降低了更多个连接的开销。不过这个依赖于客户端是否想保持连接。IE默认是保持连接的，当你打开100个图片的网站时，IE有可能只打开2个连接，通过这两个连接传送数据，而不是开100个连接。
+语法：keepAlive {on | off}
+
+KeepAlive on
+MaxKeepAliveRequests  数字            # 一个连接最多可以发送多少次请求
+KeepAliveTimeout      数字(单位为秒)   # 连接超时时间
+ 
+# KeepAliveTimeout 为持久连接保持的时间，也就是说，在这此连接结束后开始计时，多长时间内没有重新发送HTTP请求(相当于这个连接通道空闲多久)，就断掉连接。默认设置为5秒，这个值可以大点，但不能太大，否则会出现同时等候过多连接，导致多的内存被占用。
+    在 Apache 服务器中，KeepAlive 是一个布尔值，On 代表打开，Off 代表关闭，这个指令在其他众多的 HTTPD 服务器中都是存在的。
+    KeepAlive 配置指令决定当处理完用户发起的 HTTP 请求后是否立即关闭 TCP 连接，如果 KeepAlive 设置为 On，那么用户完成一次访问后，不会立即断开连接，如果还有请求，那么会继续在这一次 TCP 连接中完成，而不用重复建立新的 TCP 连接和关闭 TCP 连接，可以提高用户访问速度。
+ 那么我们考虑3种情况：
+　　 1。用户浏览一个网页时，除了网页本身外，还引用了多个 javascript. 文件，多个 css 文件，多个图片文件，并且这些文件都在同一个 HTTP 服务器上。
+　　2。用户浏览一个网页时，除了网页本身外，还引用一个 javascript. 文件，一个图片文件。
+　　3。 用户浏览的是一个动态网页，由程序即时生成内容，并且不引用其他内容。
+ 对于上面3中情况，我认为：1 最适合打开 KeepAlive ，2 随意，3 最适合关闭 KeepAlive
+ 下面我来分析一下原因。
+ 在 Apache 中，打开和关闭 KeepAlive 功能，服务器端会有什么异同呢？
+ 先看看理论分析。
+     打开 KeepAlive 后，意味着每次用户完成全部访问后，都要保持一定时间后才关闭会关闭 TCP 连接，那么在关闭连接之前，必然会有一个 Apache 进程对应于该用户而不能处理其他用户，假设 KeepAlive 的超时时间为 10 秒种，服务器每秒处理 50 个独立用户访问，那么系统中 Apache 的总进程数就是 10 * 50 ＝ 500 个，如果一个进程占用 4M 内存，那么总共会消耗 2G 内存，所以可以看出，在这种配置中，相当消耗内存，但好处是系统只处理了 50次 TCP 的握手和关闭操作。
+     如果关闭 KeepAlive，如果还是每秒50个用户访问，如果用户每次连续的请求数为3个，那么 Apache 的总进程数就是 50 * 3 = 150 个，如果还是每个进程占用 4M 内存，那么总的内存消耗为 600M，这种配置能节省大量内存，但是，系统处理了 150 次 TCP 的握手和关闭的操作，因此又会多消耗一些 CPU 资源。
+ 在看看实践的观察。
+     我在一组大量处理动态网页内容的服 务器中，起初打开 KeepAlive 功能，经常观察到用户访问量大时Apache进程数也非常多，系统频繁使用交换内存，系统不稳定，有时负载会出现较大波动。关闭了 KeepAlive 功能后，看到明显的变化是： Apache 的进程数减少了，空闲内存增加了，用于文件系统Cache的内存也增加了，CPU 的开销增加了，但是服务更稳定了，系统负载也比较稳定，很少有负载大范围波动的情况，负载有一定程度的降低；变化不明显的是：访问量较少的时候，系统平均 负载没有明显变化。
+ 总结一下：
+　　在内存非常充足的服务器上，不管是否关闭 KeepAlive 功能，服务器性能不会有明显变化；
+　　如果服务器内存较少，或者服务器有非常大量的文件系统访问时，或者主要处理动态网页服务，关闭 KeepAlive 后可以节省很多内存，而节省出来的内存用于文件系统Cache，可以提高文件系统访问的性能，并且系统会更加稳定。
+ 补充：
+　　关于是否应该关闭 KeepAlive 选项，我觉得可以基于下面的一个公式来判断。
+ 在理想的网络连接状况下， 系统的 Apache 进程数和内存使用可以用如下公式表达：
+HttpdProcessNumber = KeepAliveTimeout * TotalRequestPerSecond / Average(KeepAliveRequests)
+HttpdUsedMemory = HttpdProcessNumber * MemoryPerHttpdProcess
+换成中文：
+总Apache进程数 = KeepAliveTimeout * 每秒种HTTP请求数 / 平均KeepAlive请求
+Apache占用内存 = 总Apache进程数 * 平均每进程占用内存数
+需要特别说明的是：
+　　[平均KeepAlive请求] 数，是指每个用户连接上服务器后，持续发出的 HTTP 请求数。当 KeepAliveTimeout 等 0 或者 KeepAlive 关闭时，KeepAliveTimeout 不参与乘的运算从上面的公式看，如果 [每秒用户请求] 多，[KeepAliveTimeout] 的值大，[平均KeepAlive请求] 的值小，都会造成 [Apache进程数] 多和 [内存] 多，但是当 [平均KeepAlive请求] 的值越大时，[Apache进程数] 和 [内存] 都是趋向于减少的。
+     基于上面的公式，我们就可以推算出当 平均KeepAlive请求 <= KeepAliveTimeout 时，关闭 KeepAlive 选项是划算的，否则就可以考虑打开。
+修改之后，建议通过一些压力测试工具测试，对比。
+   
+4、DSO（Dynamic Shared Object）模块加载
+语法：LoadModule  模块名称  模块路径
+注意：可以使用绝对路径和相对路径,相对路径为ServerRoot定义的路径
+http -l  列出 Statically compiled modules， Compiled in modules。
+
+[root@localhost ~]# httpd -M        # 列出已经装载的所有DSO及非DSO模块
+[root@localhost ~]# httpd -l        # 列出支持使用的非DSO模块
+
+可以 通过 Include 指令， 加载额外的配置文件，保证主配置文件的整洁和可维护性。
+
+# Load config files from the config directory "/etc/httpd/conf.d".
+#
+Include conf.d/*.conf
+5、设置站点名称
+语法：ServerName www.example.com:80
+注意：如果设置这项，在启动apache的时候 apache会去试图反解当前主机监听的IP地址去得到主机名 如果反解不出来就会报错。并使用127.0.0.1。
+解决办法：           
+启动这个选项并设置站点名称
+添加监听地址对应的主机名 host记录
+
+# vi /etc/hosts
+172.16.100.1   www.example.com   www
+
+6、配置站点根目录
+
+# DocumentRoot: The directory out of which you will serve your
+# documents. By default, all requests are taken from this directory, but
+# symbolic links and aliases may be used to point to other locations.
+#
+DocumentRoot "/var/www/html"
+
+7、配置访问属性
+    我们定义的DocumentRoot,能够被访问以及如何被访问，其实是由目录的属性所控制的。
+
+<Directory "/var/www/html">
+ 
+### Options ###
+Options         #以下为选项,一般是写成一行,以空格分隔, 这里为了方便归类,写成竖排
+    Indexes         #缺少主页时,允许将目录中的所有文件以列表的方式发回给用户（危险）
+    FollowSymLinks  #允许跟随符号连接所指向的原始文件（危险）
+    None            #所有都不启用
+    All             #所有都启用
+    ExecCGI         #允许使用mod_cgi模块执行CGI脚本
+    Includes        #允许使用mod_include模块实现服务器端包含(SSI)（危险）
+    MultiViews      #允许使用mod_negotiation实现内容协商
+    SymLinksIfOwnerMatch   #在链接文件属主属组与原始文件的属主属组相同时，允许跟随符号链接所指向的原始文件
+ 
+### AllowOverride ###
+# AllowOverride controls what directives may be placed in .htaccess files.
+# 控制哪些指令可以应用在.htaccess文件中，也就是.htaccess中的配置能否覆盖主配置文件中的指令，使.htaccess中的指令生效
+ 
+AllowOverride       
+    None               # .htaccess文件将被完全忽略  
+    Option             # 允许使用控制目录特征的指令.他们包括Options 和XBitHack
+    FileInfo           # FileInfo 允许使用文件控制类型的指令。它们包括AddEncoding AddLanguage  AddType  DEfaultType ErrorDocument LanguagePriority
+    AuthConfig         # 允许使用所有的权限指令，他们包括AuthDBMGroupFile AuthDBMUserFile  AuthGroupFile  AuthName AuthTypeAuthUserFile和Require
+    Limit              # 允许使用权限控制指令。它们包括Allow Deny和Order
+    Index              # 允许使用目录控制类型的指令。它们包括AddDescription  AddIcon  AddIconByEncoding AddIconByType  DefaultIcon  DirectoryIndex  FancyIndexing  HeaderName  IndexIgnore  IndexOptions ReadmeName
+  
+### 访问权限 ###
+Order allow,deny   #这两行都是基于IP访问控制的, 后面一项是默认选项（这里是deny）
+Allow from all     
+</Directory>
+
+作用：限制访问站点资源的客户端来源，即设置允许或拒绝访问服务器资源的来源主机。
+配置指令：
+        Order allow,deny|deny,allow
+         Allow from  all | IP地址 | 网络号       # 定义允许列表，白名单
+         Deny from  all | IP地址 | 网络号       # 定义拒绝列表，黑名单
+         指令说明：Order指令是用来定义allow和deny哪一个为默认法则； 默认策略。
+         写在后面的为默认法则；写在前面的指令，没有显示定义的，即受后面指令控制。
+        地址表示方式： IP | network/netmask  | HOSTNAME | domainname 
+例子：
+
+Order allow,deny
+Allow from 172.16.0.0/16   # 默认deny,仅允许这个网段内的客户端访问
+ 
+Order deny,allow
+Deny from 172.16.0.0/16    # 默认allow,仅拒绝这个网段内的客户端访问
+ 
+Order allow,deny
+Allow from 172.16.0.0/16
+Deny from 172.16.100.7     # 最长匹配原则 172.16.100.7是被拒绝的
+ 
+Order allow,deny
+Allow from all
+Deny from 10.0.0.1      # 阻止一个IP
+Deny from 192.168.0.0/24   # 阻止一个IP网段
+参数说明：
+    Order定义allow和deny哪个为默认法则：写在后面的为默认法则，即deny，意味着写在前面的指令没有明确定义的即后面的控制。
+    以第二行为例，如果allow后面没有明确说明，则除此条规则外全部都是deny。
+例子：
+1、仅允许这个网段的IP访问
+
+<Directory "/var/www/html">
+   Options Indexes FollowSymLinks
+   AllowOverride None
+   Order allow,deny
+   Allow from 192.168.11.0/24
+</Directory>
+2、只禁止某个IP段的主机访问，其他全部放行
+
+<Directory "/var/www/html">
+   Options Indexes FollowSymLinks
+   AllowOverride None
+   Order deny,allow
+   deny from 192.168.11.0/24
+</Directory>
+
+8、定义默认主页
+
+DirectoryIndex index.html index.html.var  
+ 
+#默认主页为index.html,会依次从左向右查询匹配
+
+9、配置日志功能
+    绝对不要随意给予任何人对于httpd存放日志文件目录的写权限。
+    配置日志，设计指令如下：
+LogFormat    定义日志格式，可以命名方便以后调用
+CustomLog    指定日志文件路径，以及所采用的格式
+    访问日志中会记录服务器所处理的请求，其文件名和位置取决于 CustomLog指令，LogFormat指令可以简化日志的内容。
+    LogFormat指令定义一种特定的记录格式字符串，并给它起了个别名叫做：common，其中的"%"指示服务器用某种信息替换，其他字符则不作替换。引号(")必须加反斜杠转义，以避免被解释为字符串的结束。格式字符串还可以包含特殊的控制符，如换行符"\n"、制表符"\t"。（类似于： printf 函数）
+ErrorLog        指定错误日志路径
+LogLevel       指定哪种日志等级信息记录到error_log,  Possible values include: debug, info, notice, warn, error, crit, alert, emerg.
+    错误日志是最重要的日志文件，其文件名和位置取决于 ErrorLog 指令。由于这里经常包含了出错细节以及如何解决，如果服务器启动或运行中有问题，首先就应该检查这个错误日志。 LogLevel指令使只有高于（>=）指定严重性级别的错误才会被记录。
+    在测试中，对任何问题持续监视错误日志是非常有用的。可以这样做： tail -f error_log
+
+# 错误日志
+LogLevel warn
+ErrorLog logs/error_log
+ 
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined     
+#combined日志模版
+LogFormat "%h %l %u %t \"%r\" %>s %b" common #common日志模版
+LogFormat "%{Referer}i -> %U" referer        #rederer日志模版
+LogFormat "%{User-agent}i" agent             #agent日志模版
+ 
+# 访问日志
+CustomLog logs/access_log combined           #这里使用的是combined的模版
+ 
+# 参数解释
+%h: 客户端地址
+%l: 远程主机系统登录名，通常为-
+%u: 页面认证时的远程用户名，没有认证时为-
+%t: 收到请求时的时间；
+%r: 请求报文的起始行；
+%>s: 响应状态码；
+%b: 响应报文的长度，单位为字节
+%{Header_Name}i: 记录指定请求报文首部的内容
+ 
+更详细的信息：http://httpd.apache.org/docs/2.2/zh-cn/mod/mod_log_config.html#logformat
+    如果需要为每个虚拟机配置日志，那么只需要为每个虚拟主机添加 CustomLog, ErrorLog 指令就可以了。
+如果把CustomLog或ErrorLog指令放在<VirtualHost>段内，所有对这个虚拟主机的请求和错误信息会被记录在其私有的日志文件中，那些没有在<VirtualHost>段内使用日志指令的虚拟主机将仍然和主服务器使用同一个日志。
+
+ 即使一个并不繁忙的服务器，其日志文件的信息量也会很大，一般每10000个请求，访问日志就会增加1MB或更多。这就有必要定期滚动日志文件。由于Apache会保持日志文件的打开，并持续写入信息，因此服务器运行期间不能执行滚动操作。移动或者删除日志文件以后，必须重新启动服务器才能让它打开新的日志文件。
+
+管道日志 的一种重要用途是，允许日志滚动而无须重新启动服务器。为此，服务器提供了一个简单的程序rotatelogs 。每24小时滚动一次日志的例子如下：
+
+CustomLog "| /usr/local/apache/bin/rotatelogs /var/log/access_log 86400" common
+注意：引号用于界定整个管道命令行。虽然这是针对访问日志的，但是其用法对于其他日志也一样。
+
+# rotatelogs  [ -l ] [ -L linkname ] [ -p program ] [ -f ][ -v ] [ -e ] [ -c ] logfile rotationtime|file-size(B|K|M|G) [ offset ]
+ 
+ErrorLog  "|/usr/local/apache/bin/rotatelogs /usr/local/apache/logs/errorlog.%Y-%m-%d-%H_%M_%S 2M +480"
+CustomLog  "|/usr/local/apache/bin/rotatelogs /usr/local/apache/logs/accesslog.%Y-%m-%d-%H_%M_%S 2M +480" common
+ 
+意义如下：
+errorlog.%Y-%m-%d-%H_%M_%S为生成日志的格式，类似于这样：errorlog.2010-04-15-11_32_30 ，以年月日时分秒为单位的，
+2M 为日志的大小，即为日志达到多大后生成新的日志文件，支持的单位为K,M,G，本处为2M
++480 为时差，文件的时间为美国时间，中国的时差要比美国多8个小时也就是480分钟，所以要加上480分钟
+ 
+还有其他的设置方法如下：按时间轮转
+ErrorLog "|bin/rotatelogs.exe -l logs/error-%Y-%m-%d.log 86400"
+其中86400为轮转的时间单位为秒
+
+10、配置路径别名（类似于IIS中的，虚拟目录的概念）
+    通常，我们访问页面都是相对于 DocumentRoot 目录， 也就是说 http://localhost 就是映射到 DocumentRoot目录。 http://localhost/index.html     则访问的是 DocumentRoot/index.html
+    如果想将一组文件放置在网站上,希望将它们留在本来位置而搬移到新的位置, 那么我们就可以使用路径别名机制：
+http://localhost/bbs/   要访问非 DocumentRoot 路径下目录
+alias /bbs/  “/usr/share/doc/”
+这样， 当我们访问 http://localhost/bbs/，则访问的是/usr/share/doc/bbs/  , 相对于DocumentRoot“/usr/share/doc/”   则是真正的文件系统路径
+    注意Alias对于斜线的使用,如果别名末尾使用的斜线,则对应目录也要以斜线结束;如果别名末尾没有斜线,则对应目录也不需要.
+
+Alias /icons "/var/www/icons"  
+#意味着访问http://Server_IP/icons/时，其页面文件来自于/var/www/icons/这个位置
+
+11、设定默认字符集
+
+AddDefaultCharset UTF-8
+
+12、告知 Apache 如何解析特定的扩展名
+比如apache解析 PHP
+
+AddType application/x-httpd-php .php    
+AddType application/x-httpd-php-source .phps
+但是php官方站点提到：
+    为了避免潜在的危险，例如上传或者创建类似 exploit.php.jpg 的文件并被当做 PHP 执行，我们不再使用 Apache 的 AddType 指令来设置。参考下面的例子，你可以简单的将需要的扩展名解释为 PHP。我们演示为增加.php。
+
+<FilesMatch \.php$>
+   SetHandler application/x-httpd-php
+</FilesMatch>
+或者，你也想将 .php，.php2，.php3，.php4，.php5，.php6，以及 .phtml 文件都当做 PHP 来运行，我们无需额外的设置，仅需按照下面这样来：
+
+<FilesMatch "\.ph(p[2-6]?|tml)$">
+   SetHandler application/x-httpd-php
+</FilesMatch>
+然后，可以将 .phps 文件由 PHP 源码过滤器处理，使得其在显示时可以高亮源码，设置如下：
+
+<FilesMatch "\.phps$">
+   SetHandler application/x-httpd-php-source
+</FilesMatch>
+
+13、用户认证
+    apache提供了一系列的认证，授权，访问控制模块，我们这里选用最方便的mod_auth_basic，mod_authn_file，mod_authz_user这三个模块实现目录或文件需要输入用户和密码认证。
+用户认证的分类：
+基本用户认证（Basic）
+摘要用户认证（Digest）
+    普通认证安全性不高，并且用户名和密码在传输过程中也只进行了Base64编码，很容易被窃取。摘要认证的安全性要比普通认证高，缺点就是： 不是所有的浏览器都支持它。
+基于文本文件的用户认证配置指令：
+
+   AuthType   basic|digest     # 指定用户认证的类型
+   AuthName   "字符串"         # 配置用户认证的提示信息
+   AuthUserfile  文件路径      # 配置存放用户口令信息的文件路径
+   Authgroupfile   文件路径    # 配置存放用户组信息的文件路径
+   Require  user   用户名      # 指定可以访问站点资源的用户名
+   Require  group  用户组名    # 指定可以访问站点资源的组名
+   Require  valid-user        # 配置允许所有经过身份验证的用户都能访问资源
+   Satisfy  all|any           # 配置主机访问控制和用户认证之间的相互关系
+    当一个目录同时使用主机访问控制和用户认证两种规则时，Satisfy值为All时，表示必须同时满足两个规则才能访问；Satisfy值为Any时，表示任意一个规则满足都可以访问。
+    注意：这些命令通常放到主配置文件 httpd.conf 的 directory/files/location容器中，也可以放在.htaccess文件，当你打算用在.htaccess文件中时，必须使用 AllowOverride AuthConfig。
+1、首先需要创建一个密码文件，根据文件的用户名和密码进行认证，此用户与系统用户无关。
+
+[root@localhost ~]# htpasswd -c /etc/httpd/password user1
+# /etc/httpd/password 是密码文件的位置
+# user1 是添加授权的用户
+# -c 选项只能在创建文件时使用，以后都要去掉，否则将清除原有文件
+2、然后修改httpd.conf或者.htaccess文件，指示服务器允许哪些用户访问并向用户索取密码。
+
+[root@localhost ~]# vi /etc/httpd/conf.d/virtual.conf 
+<VirtualHost 192.168.11.101:8080>
+   serverName www.b.org
+   DocumentRoot "/www/b.org"
+ 
+   <Directory "/">
+       Options None
+       Order allow,deny
+       Allow from 192.168.11.0/24
+                 
+       AuthType Basic                # 认证方法
+       AuthName "Restricted Files"   # 设置认证提示信息
+       AuthUserFile "/etc/httpd/password"  # 设置密码文件的位置
+       Require user user1          # 设置允许访问受保护区域的用户，多个用户以空格分隔
+   </Directory>
+</VirtualHost>
+ 
+# AuthName 后面是服务器信息，你可以替换成任意字符，最好用能反应你服务器信息的字符串，
+#     这里个信息会显示在输入用户和密码的对话框中,服务器提示："..."；
+  
+# AuthType 后面是认证类型，Basic表示普通认证。摘要认证相应的指令是Digest；
+# AuthUserFile 后面是你存放用户名和密码的文件；
+# require valid-user 表示配置文件中的合法用户都可以访问。
+ 
+[root@localhost ~]# service httpd reload
+当我们通过浏览器访问的时候，弹出如下：
+wKioL1PYYDfyyHSiAADpaMUIzqg455.jpg
+允许多人访问
+
+1、如果想允许多人访问，那么就必须建立一个组文件以确定组中的用户。它只是每组一行的用空格分隔的组成员列表。那么需要用到 AuthGroupFile 指令。
+
+GroupName: user1 user2 user3
+2、向已有的密码文件中增加其他用户
+
+[root@localhost ~]# htpasswd  /etc/httpd/password user2
+[root@localhost ~]# htpasswd  /etc/httpd/password user3
+这样就会追加用户到已有的密码文件中，而不是建立一个新文件，不要 -c 选项（-c 强制建立新的密码文件）
+3、编辑配置文件
+
+ AuthType Basic                 # 认证方法
+ AuthName "By Invitation Only"       # 设置认证提示信息
+ AuthUserFile /etc/httpd/password      # 设置密码文件的位置
+ AuthGroupFile  /etc/httpd/htgroup     # 设置组文件的位置
+ Require group GroupName          # 设置允许访问受保护区域的用户
+除了建立组文件，还有另一种途径运行多人访问，允许密码文件所有用户访问
+1
+Require valid-user
+这样，它就可以允许密码文件中的所有用户使用正确的密码进行访问。
+
+14、配置路径别名（虚拟目录）
+    URL路径和本地文件系统路径不是一回事儿，URL是相对于DocumentRoot（/）的。通常，我们访问页面都是相对于DocumentRoot目录，也就是URL的/映射到DocumentRoot（/）目录。
+    URL: http://localhost/index.html    则访问的是 DocumentRoot/index.html
+
+认识虚拟目录：
+    就是在站点中建立一个链接指向某个物理路径，可用于发布站点主目录以外资源或缩短物理路径。
+虚拟目录配置指令：
+    Alias  URL-path  物理路径
+    作用：映射URL到文件系统的特定区域
+    AliasMatch  正则表达式  物理路径
+    作用：使用正则表达式映射URL到文件系统特定区域
+注意：以上配置命令可以在主服务器或虚拟主机中配置
+例子：假设 http://localhost/bbs/ 要访问 非DocumentRoot目录下
+1
+<span style="color:rgb(51,51,51);font-family:'Microsoft Yahei';font-size:14px;line-height:20px;text-indent:28px;background-color:rgb(255,255,255);">alias    /bbs/    "/usr/share/doc/"<br></span>
+这样，当我们访问 http://localhost/bbs/ 时，则访问的是/usr/share/doc/目录
+注意：如果别名末尾使用了斜线/, 则对应的文件系统路径也要以斜线/结束。如果别名末尾没有斜线，则对应的目录也不需要。
+
+15、设置 404 错误页面
+    HTTP 404 错误意味着链接指向的网页不存在，即原始网页的URL失效，这种情况经常会发生，很难避免，比如说：网页URL生成规则改变、网页文件更名或移动位置、导入链接拼写错误等，导致原来的URL地址无法访问；当Web 服务器接到类似请求时，会返回一个404 状态码，告诉浏览器要请求的资源并不存在。但是，Web服务器默认的404错误页面，无论Apache还是IIS，均十分简陋、呆板且对用户不友好，无法给用户提供必要的信息以获取更多线索，无疑这会造成用户的流失。
+需要注意的是：
+1、404页面的内容必须大于512b， 若小于512b，IE会认为该404页面不够友好，在IE下将不会成功返回该404错误页面，但是在firefox, chrome浏览器中不存在这个问题。
+2、ErrorDocument 404 /404.html，切忌不要使用绝对URL（如：ErrorDocument 404 http://www.example.com/404.html），这样网站返回状态码是200而不是404.
+设置方法：
+只有中心主机的情况：编辑httpd.conf配置文件，找到#ErrorDocument 404 /missing.html，去除前面的注释符号即可。当然，我们完全可以定制 404.html 页面的内容。
+
+第一步：修改 httpd.conf，找到：
+#ErrorDocument 500 "The server made a boo boo."
+#ErrorDocument 404 /missing.html
+#ErrorDocument 404 "/cgi-bin/missing_handler.pl"
+#ErrorDocument 402 http://www.example.com/subscription_info.html
+httpd.conf中的这一部分,#ErrorDocument 404 /missing.html 是显示错误页信息的,去掉前面的#，修改为：
+ErrorDocument 404 /404.html
+ 
+第二步：然后在 DocumentRoot 指定的目录，创建我们的404.html文件。
+# vi /var/www/html/404.html
+<html>
+        <h1>Custom: 404 Not found</h1>
+</html>
+ 
+第三步：重新加载配置文件
+# service httpd reload
+多个虚拟主机的情况：ErrorDocument 404 /404.html 指令放在那个虚拟主机的 <VirtualHost  ***> 下面就可以了
+
+16、CGI
+如何执行CGI程序？
+（1）检查主配置文件 httpd.conf ，确保cgi_module模块被启用
+
+# grep -i cgi_module /etc/httpd/conf/httpd.conf
+LoadModule cgi_module modules/mod_cgi.so
+（2）允许CGI在目录中执行，需要两个步骤。第一步：必须用AddHandler或SetHandler指令激活 cgi-script处理器。第二步：必须在该目录的 Directory 指令中启用 ExecCGI 选项。
+
+## 激活处理器(支持 perl, python, shell)，那么该目录下以.sh, .py 文件都当做CGI程序处理
+AddHandler cgi-script .cgi .sh .pl .py
+ 
+## 配置目录选项,比如 /var/www/cgi-bin/目录 Options ExecCGI
+<Directory "/var/www/cgi-bin">
+    AllowOverride None
+    Options ExecCGI
+    Order allow,deny
+    Allow from all
+</Directory>
+（3）我们在 /var/www/cgi-bin/ 目录下创建 cgi脚本（这里是bash脚本， index.sh）
+
+#!/bin/bash
+ 
+echo "Content-type: text/html"
+echo
+echo "Current Time is: $(date)"
+# end of cgi script file
+ 
+## 加上可执行权限
+# chmod +x index.sh
+    CGI不执行，APACHE错误日志：Premature end of script headers，或 malformed header from script. Bad headerXXX，这种情况，还是检查一下CGI输出的第一句话是啥。直接执行脚本，输出应该是形如：
+       Content-type:text/html\n\n
+    CGI文件第一句一定要先定义类型，然后跟着是一个新空行，然后再输其他内容。
+（4）通过浏览器访问: http://your-ip/cgi-bin/index.sh
+
+脚本路径别名？
+1
+ScriptAlias    /cgi-bin/    /usr/local/apache2/cgi-bin/
