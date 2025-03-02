@@ -8,9 +8,11 @@
 <a class=navbar-brand href=/>CJ.Tong Blog</a></div><div id=huxblog_navbar><div class=navbar-collapse><ul class="nav navbar-nav navbar-right"><li><a href=/>All Posts</a></li><li><a href=/categories/emacs/>emacs</a></li><li><a href=/archive//>ARCHIVE</a></li><li><a href=/notes//>NOTES</a></li><li><a href=/about//>ABOUT</a></li><li><a href=/search><i class="fa fa-search"></i></a></li></ul></div></div></div></nav><script>var $body=document.body,$toggle=document.querySelector(".navbar-toggle"),$navbar=document.querySelector("#huxblog_navbar"),$collapse=document.querySelector(".navbar-collapse");$toggle.addEventListener("click",handleMagic);function handleMagic(){$navbar.className.indexOf("in")>0?($navbar.className=" ",setTimeout(function(){$navbar.className.indexOf("in")<0&&($collapse.style.height="0px")},400)):($collapse.style.height="auto",$navbar.className+=" in")}</script><style type=text/css>header.intro-header{background-image:url(/img/home-bg-jeep.jpg)}</style><header class=intro-header><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><div class=post-heading><div class=tags></div><h1>Hugo</h1><h2 class=subheading></h2><span class=meta>Posted by
 [cjtong]
 on
-Tuesday, May 21, 2024</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
+Sunday, March 2, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
 col-md-10 col-md-offset-1
-post-container"><h2 id=用-ox-hugo-写博客>用 ox-hugo 写博客 <span class=tag><span class=_emacs>@emacs</span></span></h2><h3 id=安装hugo和ox-hugo>安装hugo和ox-hugo</h3><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>sudo apt install hugo -y</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elisp data-lang=elisp><span style=display:flex><span><span style=color:#75715e>;; 打开init.el</span>
+post-container"><h2 id=工作流>工作流</h2><p>emacs + orgmode + ox-hugo + hugo + githubApi + githubWorkflow</p><h2 id=工具介绍>工具介绍</h2><p><code>=easy-hugo</code> 用来管理 Hugo 的文章，
+<code>ox-hugo</code> 用来将 org mode 文章转化为 markdown 格式</p><h2 id=用-ox-hugo-写博客>用 ox-hugo 写博客</h2><h3 id=安装hugo和ox-hugo>安装hugo和ox-hugo</h3><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>sudo apt install hugo -y
+</span></span><span style=display:flex><span>sudo pacman -S hugo</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elisp data-lang=elisp><span style=display:flex><span><span style=color:#75715e>;; 打开init.el</span>
 </span></span><span style=display:flex><span><span style=color:#111>(</span><span style=color:#111>org</span> <span style=color:#111>+hugo</span><span style=color:#111>)</span>               <span style=color:#75715e>; organize your plain life in plain text</span></span></span></code></pre></div><h3 id=快速上手使用>快速上手使用</h3><h4 id=hugo>hugo</h4><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>hugo new site my-hugo-site
 </span></span><span style=display:flex><span>git init
 </span></span><span style=display:flex><span>git submodule add https://github.com/theNewDynamic/gohugo-theme-ananke.git themes/ananke
@@ -18,13 +20,13 @@ post-container"><h2 id=用-ox-hugo-写博客>用 ox-hugo 写博客 <span class=t
 </span></span><span style=display:flex><span><span style=color:#75715e>#hugo-theme-cleanwhite theme</span>
 </span></span><span style=display:flex><span>git submodule add https://github.com/zhaohuabing/hugo-theme-cleanwhite.git themes/hugo-theme-cleanwhite
 </span></span><span style=display:flex><span>cp -r hugo-theme-cleanwhite/exampleSite/** ../
-</span></span><span style=display:flex><span>hugo server -D</span></span></code></pre></div><h4 id=emacs>emacs</h4><ol><li>新建helloworld.org文件<br></li><li>参数解释<br><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-org data-lang=org><span style=display:flex><span> #+hugo_base_dir: ~<span style=font-style:italic>/Blog/</span> 指定了 hugo 博客文件夹的位置
+</span></span><span style=display:flex><span>hugo server -D</span></span></code></pre></div><h4 id=emacs>emacs</h4><ol><li>新建helloworld.org文件</li><li>参数解释<div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-org data-lang=org><span style=display:flex><span> #+hugo_base_dir: ~<span style=font-style:italic>/Blog/</span> 指定了 hugo 博客文件夹的位置
 </span></span><span style=display:flex><span> #+hugo_front_matter_format: yaml 指定了 front matter 的格式
 </span></span><span style=display:flex><span> #+hugo_auto_set_lastmod: t 会让 ox-hugo 自动更新博客的修改时间
 </span></span><span style=display:flex><span> #+hugo_section: post 指定了这篇博客会发布到的目录，比如 post 或者 posts
-</span></span><span style=display:flex><span> :EXPORT_FILE_NAME: hugo_ox-hugo
-</span></span><span style=display:flex><span> :EXPORT_DESCRIPTION: ox-hugo初体验!
-</span></span><span style=display:flex><span> :EXPORT_HUGO_BUNDLE: emacs/ox-hugo</span></span></code></pre></div></li><li>C-c C-e H h 导出到hugo目录中<br></li><li>自动保存 org-hugo-auto-export-mode<br><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-markdown data-lang=markdown><span style=display:flex><span> 添加.dir-locals.el到org目录下，内容为
+</span></span><span style=display:flex><span> # :EXPORT_FILE_NAME: hugo_ox-hugo
+</span></span><span style=display:flex><span> # :EXPORT_DESCRIPTION: ox-hugo初体验!
+</span></span><span style=display:flex><span> # :EXPORT_HUGO_BUNDLE: emacs/ox-hugo</span></span></code></pre></div></li><li>C-c C-e H h 导出到hugo目录中</li><li>自动保存 org-hugo-auto-export-mode<div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-markdown data-lang=markdown><span style=display:flex><span> 添加.dir-locals.el到org目录下，内容为
 </span></span><span style=display:flex><span> ((org-mode . ((eval . (org-hugo-auto-export-mode)))))
 </span></span><span style=display:flex><span> 添加下面内容到文件结尾
 </span></span><span style=display:flex><span> x Footnotes
@@ -38,7 +40,8 @@ post-container"><h2 id=用-ox-hugo-写博客>用 ox-hugo 写博客 <span class=t
 <button class="btn btn-blink" data-num=50>50元</button>
 <button class="btn btn-blink" data-num=100>100元</button>
 <button class="btn btn-blink" data-num=1>任意金额</button></div><div class=zs-modal-pay><button class="btn btn-bred" id=pay-text>2元</button><p>使用<span id=pay-type>微信</span>扫描二维码完成支付</p><img src=/img/reward/wechat-2.png id=pay-image></div></div><div class=zs-modal-footer><label><input type=radio name=zs-type value=wechat class=zs-type checked><span><span class=zs-wechat><img src=/img/reward/wechat-btn.png></span></label>
-<label><input type=radio name=zs-type value=alipay class=zs-type class=zs-alipay><img src=/img/reward/alipay-btn.png></span></label></div></div><script type=text/javascript src=/js/reward.js></script><hr><ul class=pager><li class=next><a href=/post/emacs/doom/ data-toggle=tooltip data-placement=top title=Doom>Next
+<label><input type=radio name=zs-type value=alipay class=zs-type class=zs-alipay><img src=/img/reward/alipay-btn.png></span></label></div></div><script type=text/javascript src=/js/reward.js></script><hr><ul class=pager><li class=previous><a href=/post/emacs/doom/ data-toggle=tooltip data-placement=top title=Doom>&larr;
+Previous Post</a></li><li class=next><a href=/post/emacs/hugo_ox-hugo/ data-toggle=tooltip data-placement=top title="用 ox-hugo 写博客">Next
 Post &rarr;</a></li></ul></div><div class="col-lg-2 col-lg-offset-0
 visible-lg-block
 sidebar-container
