@@ -1,0 +1,149 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta property="og:site_name" content="CJ.Tong Blog"><meta property="og:type" content="article"><meta property="og:image" content="https://cjtong.space//img/home-bg-jeep.jpg"><meta property="twitter:image" content="https://cjtong.space//img/home-bg-jeep.jpg"><meta name=title content="Arch Linux 系统安装"><meta property="og:title" content="Arch Linux 系统安装"><meta property="twitter:title" content="Arch Linux 系统安装"><meta name=description content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="og:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="twitter:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="twitter:card" content="summary"><meta name=keyword content="CjTong, cjtong, CJ.Tong, , CJ.Tong的网络日志, CJ.Tong的博客, CJ.Tong Blog, 博客, 个人网站, AI, Emacs, 自动驾驶， 机器人，智能硬件，3D打印机，智能家居'"><link rel="shortcut icon" href=/img/favicon.ico><title>Arch Linux 系统安装 | CJ.Tong的博客 | CJ.Tong Blog</title>
+<link rel=canonical href=/post/linux/install/><link rel=stylesheet href=/css/bootstrap.min.css><link rel=stylesheet href=/css/hugo-theme-cleanwhite.min.css><link rel=stylesheet href=/css/zanshang.css><link rel=stylesheet href=/css/font-awesome.all.min.css><script src=/js/jquery.min.js></script><script src=/js/bootstrap.min.js></script><script src=/js/hux-blog.min.js></script><script src=/js/lazysizes.min.js></script><script type=text/javascript async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script><script type=text/x-mathjax-config>
+    MathJax.Hub.Config({
+        tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
+        processEscapes: true
+        }
+    });
+    </script></head><nav class="navbar navbar-default navbar-custom navbar-fixed-top"><div class=container-fluid><div class="navbar-header page-scroll"><button type=button class=navbar-toggle>
+<span class=sr-only>Toggle navigation</span>
+<span class=icon-bar></span>
+<span class=icon-bar></span>
+<span class=icon-bar></span>
+</button>
+<a class=navbar-brand href=/>CJ.Tong Blog</a></div><div id=huxblog_navbar><div class=navbar-collapse><ul class="nav navbar-nav navbar-right"><li><a href=/>All Posts</a></li><li><a href=/archive//>ARCHIVE</a></li><li><a href=/notes//>NOTES</a></li><li><a href=/about//>ABOUT</a></li><li><a href=/search><i class="fa fa-search"></i></a></li></ul></div></div></div></nav><script>var $body=document.body,$toggle=document.querySelector(".navbar-toggle"),$navbar=document.querySelector("#huxblog_navbar"),$collapse=document.querySelector(".navbar-collapse");$toggle.addEventListener("click",handleMagic);function handleMagic(){$navbar.className.indexOf("in")>0?($navbar.className=" ",setTimeout(function(){$navbar.className.indexOf("in")<0&&($collapse.style.height="0px")},400)):($collapse.style.height="auto",$navbar.className+=" in")}</script><style type=text/css>header.intro-header{background-image:url(/img/home-bg-jeep.jpg)}</style><header class=intro-header><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><div class=post-heading><div class=tags></div><h1>Arch Linux 系统安装</h1><h2 class=subheading></h2><span class=meta>Posted by
+[cjtong]
+on
+Monday, March 24, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
+col-md-10 col-md-offset-1
+post-container"><h2 id=禁用-reflector>禁用 reflector</h2><p>reflector 会为你选择速度合适的镜像源，但其结果并不准确，同时会清空配置文件中的内容，对于新人来讲并不适用，我们首先对其进行禁用。
+systemctl stop reflector.service
+1.再次确保是否为 UEFI 模式
+在一系列的信息刷屏后，可以看到已经以 root 登陆安装系统了，此时可以执行的命令：
+ls /sys/firmware/efi/efivars
+若输出了一堆东西，即 efi 变量，则说明已在 UEFI 模式。否则请确认你的启动方式是否为 UEFI。</p><h2 id=连接网络>连接网络</h2><p>一般来说，你连接的网络几乎均可以通过 DHCP 的方式来进行 IP 地址和 DNS 的相关设置，你无需进行额外操作。在没有合适网络的情况下，使用手机的移动热点也是很方便的选择。如果你的网络环境需要配置静态 IP 和 DNS,请自行参考 Arch Wiki。
+对于有线连接来说，直接插入网线即可。
+对于无线连接，则需进行如下操作进行网络连接。
+无线连接使用 iwctl 命令进行，按照如下步骤进行网络连接：
+iwctl #执行iwctl命令，进入交互式命令行
+device list #列出设备名，比如无线网卡看到叫 wlan0
+station wlan0 scan #扫描网络
+station wlan0 get-networks #列出网络 比如想连接YOUR-WIRELESS-NAME这个无线
+station wlan0 connect YOUR-WIRELESS-NAME #进行连接 输入密码即可
+exit #成功后exit退出
+可以等待几秒等网络建立链接后再进行下面测试网络的操作。
+ping <a href=https://www.gnu.org>www.gnu.org</a>
+如果你不能正常连接网络，首先确认系统已经启用网络接口[1]。
+ip link #列出网络接口信息，如不能联网的设备叫wlan0
+ip link set wlan0 up #比如无线网卡看到叫 wlan0
+如果随后看到类似Operation not possible due to RF-kill的报错，继续尝试rfkill命令来解锁无线网卡。
+rfkill unblock wifi</p><h2 id=更新系统时钟>更新系统时钟</h2><p>timedatectl set-ntp true #将系统时间与网络时间进行同步
+timedatectl status #检查服务状态</p><h2 id=分区>分区</h2><p>这里总共设置三个分区，是一个我们认为较为通用的方案。此步骤会清除磁盘中全部内容，请事先确认。
+EFI 分区[2]： /efi 800M
+根目录： / 100G
+用户主目录： /home 剩余全部
+这里根目录的大小仅为参考，一般来说个人日常使用的 linux 分配 100G 已经够用了。根目录最小建议不小于 50G，根目录过小会造成无法更新系统软件包等问题。
+首先将磁盘转换为 gpt 类型，这里假设比如你想安装的磁盘名称为 sdx。如果你使用 NVME 的固态硬盘，你看到的磁盘名称可能为 nvme0n1。
+lsblk #显示分区情况 找到你想安装的磁盘名称
+parted /dev/sdx #执行parted，进入交互式命令行，进行磁盘类型变更
+(parted)mktable #输入mktable
+New disk label type? gpt #输入gpt 将磁盘类型转换为gpt 如磁盘有数据会警告，输入yes即可
+quit #最后quit退出parted命令行交互
+接下来使用 cfdisk 命令对磁盘分区。进入 cfdisk 后的操作很直观，用键盘的方向键、Tab 键、回车键配合即可操作分配各个分区的大小与格式。一般建议将 EFI 分区设置为磁盘的第一个分区，据说有些主板如果不将 EFI 设置为第一个分区，可能有不兼容的问题。其中 EFI 分区选择EFI System类型，其余两个分区选择Linux filesystem类型。
+cfdisk /dev/sdx #来执行分区操作,分配各个分区大小，类型
+fdisk -l #分区结束后， 复查磁盘情况</p><h2 id=格式化>格式化</h2><p>建立好分区后，需要对分区用合适的文件系统进行格式化。这里用mkfs.ext4命令格式化根分区与 home 分区，用mkfs.vfat命令格式化 EFI 分区。如下命令中的 sdax 中，x 代表分区的序号。格式化命令要与上一步分区中生成的分区名字对应才可以。
+磁盘若事先有数据，会提示你: &lsquo;proceed any way?&rsquo; 按 y 回车继续即可。
+mkfs.ext4 /dev/sdax #格式化根目录和home目录的两个分区
+mkfs.vfat /dev/sdax #格式化efi分区</p><h2 id=挂载>挂载</h2><p>在挂载时，挂载是有顺序的，先挂载根分区，再挂载 EFI 分区。 这里的 sdax 只是例子，具体根据你自身的实际分区情况来。
+mount /dev/sdax /mnt
+mkdir /mnt/efi #创建efi目录
+mount /dev/sdax /mnt/efi
+mkdir /mnt/home #创建home目录
+mount /dev/sdax /mnt/home</p><h2 id=镜像源的选择>镜像源的选择</h2><p>使用如下命令编辑镜像列表：
+vim /etc/pacman.d/mirrorlist
+其中的首行是将会使用的镜像源。添加中科大或者清华的放在最上面即可。
+Server = <a href=https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch>https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch</a>
+Server = <a href=https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch>https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch</a>
+如果其速度不佳，可以手动指定其他镜像源。完整的镜像源列表可参考官方镜像源生成器。
+这里使用中国境内的镜像源以提高访问速度。然而这存在问题，镜像源(如 arch linux 清华镜像源)以及第三方源(如 archlinux-cn)可以知道你的 ip 是什么，什么时候更新了系统，什么时候检查了系统，什么时候更新了什么软件，你安装的软件列表是什么。在威权国家的镜像源维护者完全有可能根据威权当局的要求提供这些数据，很多维护者在网络上几乎是实名上网的，他们没有任何抵抗能力，进一步的，威权国家可以根据这些元数据与你产生的其他元数据进行比对，从而对你进行进一步的定位与辨识。简单举一个例子，要求维护者提供或监视安装了 v2ray/qv2ray 等软件包的使用者的 ip,以及安装时间，以及其全部软件列表。
+如果你在安装 arch linux 时的网络已经处于代理模式下，可以选择一个与你代理位置较近的，非威权国家的镜像源来使用。如果你在安装 arch linux 时的网络环境没有代理，那么在安装结束后，需要尽快更换一个非威权国家的镜像源来使用。如下列举一些较为优质的国际源。</p><p>Server = <a href=https://mirror.archlinux.tw/ArchLinux/$repo/os/$arch>https://mirror.archlinux.tw/ArchLinux/$repo/os/$arch</a> #东亚地区:中华民国
+Server = <a href=https://mirror.0xem.ma/arch/$repo/os/$arch>https://mirror.0xem.ma/arch/$repo/os/$arch</a> #北美洲地区:加拿大
+Server = <a href=https://mirror.aktkn.sg/archlinux/$repo/os/$arch>https://mirror.aktkn.sg/archlinux/$repo/os/$arch</a> #东南亚地区:新加坡
+Server = <a href=https://archlinux.uk.mirror.allworldit.com/archlinux/$repo/os/$arch>https://archlinux.uk.mirror.allworldit.com/archlinux/$repo/os/$arch</a> #欧洲地区:英国
+Server = <a href=https://mirrors.cat.net/archlinux/$repo/os/$arch>https://mirrors.cat.net/archlinux/$repo/os/$arch</a> #东亚地区:日本</p><h2 id=安装系统>安装系统</h2><p>必须的基础包
+pacstrap /mnt base base-devel linux linux-headers linux-firmware #base-devel在AUR包的安装是必须的
+注意，目前需要首先确保等待 pacman-init.service 服务启动后，才能执行 pacstrap 或 pacman 命令安装包，否则会引发错误使得安装过程无法进行。使用systemctl status pacman-init.service命令来检查当前服务状态。更多内容参考 bbs 中的帖子
+若安装时出现密钥环相关错误，参考此文章GnuPG-2.1 and the pacman keyring并执行其中的命令。
+必须的功能性软件
+pacstrap /mnt dhcpcd iwd vim bash-completion #一个有线所需(iwd也需要dhcpcd) 一个无线所需 一个编辑器 一个补全工具</p><h2 id=生成-fstab-文件>生成 fstab 文件</h2><p>fstab 用来定义磁盘分区
+genfstab -U /mnt >> /mnt/etc/fstab
+复查一下 /mnt/etc/fstab 确保没有错误
+cat /mnt/etc/fstab
+10.change root
+把环境切换到新系统的/mnt 下
+arch-chroot /mnt</p><h2 id=时区设置>时区设置</h2><p>设置时区，在/etc/localtime 下用/usr 中合适的时区创建符号连接。如下设置上海时区。
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+随后进行硬件时间设置，将当前的正确 UTC 时间写入硬件时间。
+hwclock &ndash;systohc</p><h2 id=设置-locale-进行本地化>设置 Locale 进行本地化</h2><p>Locale 决定了地域、货币、时区日期的格式、字符排列方式和其他本地化标准。
+首先使用 vim 编辑 /etc/locale.gen，去掉 en_US.UTF-8 所在行以及 zh_CN.UTF-8 所在行的注释符号（#）。这里需要使用 vim 的寻找以及编辑功能，如果你忘记了，请翻到上一节复习 vim 的操作。
+vim /etc/locale.gen
+然后使用如下命令生成 locale。
+locale-gen
+最后向 /etc/locale.conf 导入内容
+echo &lsquo;LANG=en_US.UTF-8&rsquo; > /etc/locale.conf</p><h2 id=设置主机名>设置主机名</h2><p>首先在/etc/hostname设置主机名
+vim /etc/hostname
+加入你想为主机取的主机名，这里比如叫 myarch。
+接下来在/etc/hosts设置与其匹配的条目。
+vim /etc/hosts
+加入如下内容
+127.0.0.1 localhost
+::1 localhost
+127.0.1.1 myarch
+某些情况下如不设置主机名，在 KDE 下可能会存在网络情况变更时无法启动 GUI 应用的问题，在终端中出现形如No protocol specified qt.qpa.xcb: could not connect to display的错误，这种情况较为少见[3][4][5]。</p><h2 id=为-root-用户设置密码>为 root 用户设置密码</h2><p>passwd root</p><h2 id=安装微码>安装微码</h2><p>pacman -S intel-ucode #Intel
+pacman -S amd-ucode #AMD</p><h2 id=安装引导程序>安装引导程序</h2><p>pacman -S grub efibootmgr #grub是启动引导器，efibootmgr被 grub 脚本用来将启动项写入 NVRAM。
+grub-install &ndash;target=x86_64-efi &ndash;efi-directory=/efi &ndash;bootloader-id=GRUB
+接下来编辑/etc/default/grub 文件，去掉GRUB_CMDLINE_LINUX_DEFAULT一行中最后的 quiet 参数，同时把 log level 的数值从 3 改成 5。这样是为了后续如果出现系统错误，方便排错。同时在同一行加入 nowatchdog 参数，这可以显著提高开关机速度。这里需要使用 vim 的编辑功能，如果你忘记了，请翻到上一节复习 vim 的操作。
+vim /etc/default/grub
+使用 N 卡的用户需要注意，KDE6 默认使用 wayland session 为默认，如果你需要使用 wayland,则需开启 DRM。同样编辑/etc/default/grub 文件，在GRUB_CMDLINE_LINUX_DEFAULT一行中最后的加入参数：nvidia_drm.modeset=1
+最后生成 GRUB 所需的配置文件
+grub-mkconfig -o /boot/grub/grub.cfg
+我们在之前的命令中指定了 bootloader-id 为 GRUB，这一般不会出现问题。然而在某些主板安装完成后，你会发现没有 nvme 启动条目。这是因为某些主板的 UEFI 固件在显示 UEFI NVRAM 引导条目之前，需要在特定的位置存放可引导文件，不支持自定义存放 efi 文件[6]。解决方式是使用&ndash;removable 参数解决一些主板 NVRAM 的兼容性问题。
+grub-install &ndash;target=x86_64-efi &ndash;efi-directory=/efi &ndash;removable
+grub-mkconfig -o /boot/grub/grub.cfg
+除此之外，如果你的主板是一些较老的型号，如 intel 9 系列以下或者较老 AMD 的主板，它们很可能不支持从 nvme 启动系统，虽然可以通过修改 BIOS 加入 NVME 支持模块来解决，但这不在本文讨论范围内。</p><h2 id=完成安装>完成安装</h2><p>exit # 退回安装环境#
+umount -R /mnt # 卸载新分区
+reboot # 重启
+注意，重启前要先拔掉优盘，否则你重启后还是进安装程序而不是安装好的系统。重启后，开启 dhcp 服务，即可连接网络
+systemctl start dhcpcd #立即启动dhcp
+ping <a href=https://www.gnu.org>www.gnu.org</a> #测试网络连接
+若为无线链接，则还需要启动 iwd 才可以使用 iwctl 连接网络
+systemctl start iwd #立即启动iwd
+iwctl #和之前的方式一样，连接无线网络
+到此为止，一个基础的，无 UI 界面的 Arch Linux 已经安装完成了。紧接着下一节，我们来安装图形界面。
+archlinux 在 2021 年 4 月在安装镜像中内置了一个安装脚本，提供一些选项，即可快速安装。其和所有一键安装脚本类似，提供自动化，且不灵活的安装过程。不建议使用这种安装脚本，除了不灵活的原因，初学者也无法在这种安装过程中学到任何东西。如果你因为任何原因需要快速启动一个基础的 archlinux 环境，那么可以尝试此脚本。
+yay安装</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>sudo pacman -S --needed git base-devel <span style=color:#f92672>&amp;&amp;</span> git clone https://aur.archlinux.org/yay.git <span style=color:#f92672>&amp;&amp;</span> <span style=color:#111>cd</span> yay <span style=color:#f92672>&amp;&amp;</span> makepkg -si</span></span></code></pre></div><h2 id=图像桌面安装>图像桌面安装</h2><h3 id=gnome>gnome</h3><p>sudo pacman -Syu
+sudo pacman -S xorg
+sudo pacman -S gnome</p><p>sudo pacman -S gnome-extra
+sudo systemctl enable gdm.service
+sudo systemctl start gdm.service</p><h2 id=参考>参考</h2><p><a href=https://archlinuxstudio.github.io/ArchLinuxTutorial/#/>https://archlinuxstudio.github.io/ArchLinuxTutorial/#/</a></p><div class="entry-shang text-center"><p>「真诚赞赏，手留余香」</p><button class="zs show-zs btn btn-bred">赞赏支持</button></div><div class=zs-modal-bg></div><div class=zs-modal-box><div class=zs-modal-head><button type=button class=close>×</button>
+<span class=author><a href=https://cjtong.space/><img src=/img/favicon.png>CJ.Tong Blog</a></span><p class=tip><i></i><span>真诚赞赏，手留余香</span></p></div><div class=zs-modal-body><div class=zs-modal-btns><button class="btn btn-blink" data-num=2>2元</button>
+<button class="btn btn-blink" data-num=5>5元</button>
+<button class="btn btn-blink" data-num=10>10元</button>
+<button class="btn btn-blink" data-num=50>50元</button>
+<button class="btn btn-blink" data-num=100>100元</button>
+<button class="btn btn-blink" data-num=1>任意金额</button></div><div class=zs-modal-pay><button class="btn btn-bred" id=pay-text>2元</button><p>使用<span id=pay-type>微信</span>扫描二维码完成支付</p><img src=/img/reward/wechat-2.png id=pay-image></div></div><div class=zs-modal-footer><label><input type=radio name=zs-type value=wechat class=zs-type checked><span><span class=zs-wechat><img src=/img/reward/wechat-btn.png></span></label>
+<label><input type=radio name=zs-type value=alipay class=zs-type class=zs-alipay><img src=/img/reward/alipay-btn.png></span></label></div></div><script type=text/javascript src=/js/reward.js></script><hr><ul class=pager><li class=previous><a href=/post/emacs/hugo/ data-toggle=tooltip data-placement=top title=Hugo>&larr;
+Previous Post</a></li></ul><div id=disqus-comment></div><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//blog-threemen-tech.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><div class="col-lg-2 col-lg-offset-0
+visible-lg-block
+sidebar-container
+catalog-container"><div class=side-catalog><hr class="hidden-sm hidden-xs"><h5><a class=catalog-toggle href=#>CATALOG</a></h5><ul class=catalog-body></ul></div></div><div class="col-lg-8 col-lg-offset-2
+col-md-10 col-md-offset-1
+sidebar-container"><section><hr class="hidden-sm hidden-xs"><h5><a href=/tags/>FEATURED TAGS</a></h5><div class=tags></div></section><section><hr><h5>FRIENDS</h5><ul class=list-inline><li><a target=_blank href=https://zhaozhihan.com>Linda的博客</a></li></ul></section></div></div></div></article><footer><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><ul class="list-inline text-center"><li><a href=mailto:youremail@gmail.com><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fas fa-envelope fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=/img/wechat_qrcode.png><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fab fa-weixin fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=https://github.com/improve100><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fab fa-github fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=https://stackoverflow.com/users/yourstackoverflowid><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fab fa-stack-overflow fa-stack-1x fa-inverse"></i></span></a></li><li><a href rel=alternate type=application/rss+xml title="CJ.Tong Blog"><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fas fa-rss fa-stack-1x fa-inverse"></i></span></a></li></ul><p class="copyright text-muted">Copyright &copy; CJ.Tong Blog 2025<br><a href=https://themes.gohugo.io/hugo-theme-cleanwhite>CleanWhite Hugo Theme</a> by <a href=https://zhaohuabing.com>Huabing</a> |
+<iframe style=margin-left:2px;margin-bottom:-5px frameborder=0 scrolling=0 width=100px height=20px src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true"></iframe></p></div></div></div></footer><script>function loadAsync(e,t){var s=document,o="script",n=s.createElement(o),i=s.getElementsByTagName(o)[0];n.src=e,t&&n.addEventListener("load",function(e){t(null,e)},!1),i.parentNode.insertBefore(n,i)}</script><script>$("#tag_cloud").length!==0&&loadAsync("/js/jquery.tagcloud.js",function(){$.fn.tagcloud.defaults={color:{start:"#bbbbee",end:"#0085a1"}},$("#tag_cloud a").tagcloud()})</script><script>loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js",function(){var e=document.querySelector("nav");e&&FastClick.attach(e)})</script><script type=text/javascript>function generateCatalog(e){_containerSelector="div.post-container";var t,n,s,o,i,a=$(_containerSelector),r=a.find("h1,h2,h3,h4,h5,h6");return $(e).html(""),r.each(function(){n=$(this).prop("tagName").toLowerCase(),o="#"+$(this).prop("id"),t=$(this).text(),i=$('<a href="'+o+'" rel="nofollow" title="'+t+'">'+t+"</a>"),s=$('<li class="'+n+'_nav"></li>').append(i),$(e).append(s)}),!0}generateCatalog(".catalog-body"),$(".catalog-toggle").click(function(e){e.preventDefault(),$(".side-catalog").toggleClass("fold")}),loadAsync("/js/jquery.nav.js",function(){$(".catalog-body").onePageNav({currentClass:"active",changeHash:!1,easing:"swing",filter:"",scrollSpeed:700,scrollOffset:0,scrollThreshold:.2,begin:null,end:null,scrollChange:null,padding:80})})</script></body></html>
