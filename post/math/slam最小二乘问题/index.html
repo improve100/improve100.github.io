@@ -1,5 +1,79 @@
-<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta property="og:site_name" content="CJ.Tong Blog"><meta property="og:type" content="article"><meta property="og:image" content="https://cjtong.space//img/home-bg-jeep.jpg"><meta property="twitter:image" content="https://cjtong.space//img/home-bg-jeep.jpg"><meta name=title content="最小二乘问题"><meta property="og:title" content="最小二乘问题"><meta property="twitter:title" content="最小二乘问题"><meta name=description content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="og:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="twitter:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="twitter:card" content="summary"><meta name=keyword content="CjTong, cjtong, CJ.Tong, , CJ.Tong的网络日志, CJ.Tong的博客, CJ.Tong Blog, 博客, 个人网站, AI, Emacs, 自动驾驶， 机器人，智能硬件，3D打印机，智能家居'"><link rel="shortcut icon" href=/img/favicon.ico><title>最小二乘问题 | CJ.Tong的博客 | CJ.Tong Blog</title>
-<link rel=canonical href=/post/math/slam%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E9%97%AE%E9%A2%98/><link rel=stylesheet href=/css/bootstrap.min.css><link rel=stylesheet href=/css/hugo-theme-cleanwhite.min.css><link rel=stylesheet href=/css/zanshang.css><link rel=stylesheet href=/css/font-awesome.all.min.css><script src=/js/jquery.min.js></script><script src=/js/bootstrap.min.js></script><script src=/js/hux-blog.min.js></script><script src=/js/lazysizes.min.js></script><script type=text/javascript async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script><script type=text/x-mathjax-config>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="CJ.Tong Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/home-bg-jeep.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/home-bg-jeep.jpg" />
+    
+
+    
+    <meta name="title" content="最小二乘问题" />
+    <meta property="og:title" content="最小二乘问题" />
+    <meta property="twitter:title" content="最小二乘问题" />
+    
+
+    
+    <meta name="description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。">
+    <meta property="og:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。" />
+    <meta property="twitter:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="CjTong, cjtong, CJ.Tong, , CJ.Tong的网络日志, CJ.Tong的博客, CJ.Tong Blog, 博客, 个人网站, AI, Emacs, 自动驾驶， 机器人，智能硬件，3D打印机，智能家居&#39;">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>最小二乘问题 | CJ.Tong的博客 | CJ.Tong Blog</title>
+
+    <link rel="canonical" href="/post/math/slam%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E9%97%AE%E9%A2%98/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+    <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
         tex2jax: {
         inlineMath: [['$','$'], ['\\(','\\)']],
@@ -7,82 +81,714 @@
         processEscapes: true
         }
     });
-    </script></head><nav class="navbar navbar-default navbar-custom navbar-fixed-top"><div class=container-fluid><div class="navbar-header page-scroll"><button type=button class=navbar-toggle>
-<span class=sr-only>Toggle navigation</span>
-<span class=icon-bar></span>
-<span class=icon-bar></span>
-<span class=icon-bar></span>
-</button>
-<a class=navbar-brand href=/>CJ.Tong Blog</a></div><div id=huxblog_navbar><div class=navbar-collapse><ul class="nav navbar-nav navbar-right"><li><a href=/>All Posts</a></li><li><a href=/archive//>ARCHIVE</a></li><li><a href=/notes//>NOTES</a></li><li><a href=/about//>ABOUT</a></li><li><a href=/search><i class="fa fa-search"></i></a></li></ul></div></div></div></nav><script>var $body=document.body,$toggle=document.querySelector(".navbar-toggle"),$navbar=document.querySelector("#huxblog_navbar"),$collapse=document.querySelector(".navbar-collapse");$toggle.addEventListener("click",handleMagic);function handleMagic(){$navbar.className.indexOf("in")>0?($navbar.className=" ",setTimeout(function(){$navbar.className.indexOf("in")<0&&($collapse.style.height="0px")},400)):($collapse.style.height="auto",$navbar.className+=" in")}</script><style type=text/css>header.intro-header{background-image:url(/img/home-bg-jeep.jpg)}</style><header class=intro-header><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><div class=post-heading><div class=tags></div><h1>最小二乘问题</h1><h2 class=subheading></h2><span class=meta>Posted by
-[cjtong]
-on
-Sunday, March 2, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
-col-md-10 col-md-offset-1
-post-container"><p>在SLAM的过程中，我们可以构建机器人状态过程。通过对其概率的计算，最终将问题转化为了求最大似然估计的问题。</p><p><a href=https://zhuanlan.zhihu.com/p/113012522>贝叶斯理论在SLAM状态估计中的应用</a></p><h2 id=最小二乘问题>最小二乘问题</h2><p>我们想要求解的问题是SLAM过程中的最大似然估计问题。由于最大似然估计问题可以转换为最小二乘问题，所以也就是最小二乘的求解问题。
-我们假设目标函数为 \(F(x)\) ，误差函数为 \(f(x)\) ，则其最小二乘可以表示为[1]：</p><p>\(minF(x)=\frac{1}{2}||f(x)||^2_2\)</p><p>那么如何求解这个问题呢？
+    </script>
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">CJ.Tong Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/home-bg-jeep.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>最小二乘问题</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                [cjtong]
+                             
+                            on 
+                            Sunday, March 2, 2025
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <p>在SLAM的过程中，我们可以构建机器人状态过程。通过对其概率的计算，最终将问题转化为了求最大似然估计的问题。</p>
+<p><a href="https://zhuanlan.zhihu.com/p/113012522">贝叶斯理论在SLAM状态估计中的应用</a></p>
+<h2 id="最小二乘问题">最小二乘问题</h2>
+<p>我们想要求解的问题是SLAM过程中的最大似然估计问题。由于最大似然估计问题可以转换为最小二乘问题，所以也就是最小二乘的求解问题。
+我们假设目标函数为 \(F(x)\) ，误差函数为 \(f(x)\) ，则其最小二乘可以表示为[1]：</p>
+<p>\(minF(x)=\frac{1}{2}||f(x)||^2_2\)</p>
+<p>那么如何求解这个问题呢？
 常规的思路就是对目标函数 \(F(x)\) 进行求导，当其导数为0的时候，求 \(x\) 的最优解，最终求得极值，这里需要注意导数为0的点，不一定就是极值点，可能会是鞍点。
-然而，有些时候，若目标函数 \(F(x)\) 的不是很容易进行求导，这个时候就需要使用一些迭代的方法，来使得目标函数 \(F(x)\) 下降，这样就可以逐步迭代，求得最小值了。整个的迭代流程如下所示：</p><blockquote><ol><li>给定某个初始值\(x_0\);</li><li>对于第$k$次迭代,寻找一个增量 \(\Delta x_k\) ,使得误差\(||f(x_k+\Delta x_k)||_2^2\) 达到极小值;</li><li>若 \(\Delta x_k\) 足够小,则停止迭代;</li><li>否则,令\(x_{k+1}=x_k+\Delta x_k\),返回第2步.</li></ol></blockquote><p>因此，上诉问题，就变成了不断寻找下降增量 \(\Delta x_k\) 的问题。
-为了方便求解，我们只需要关心误差函数 \(f(x)\) 在迭代值处的局部性质，而不用考虑 \(F(x)\) 在迭代值处的全局性质，这种方法在最优化，机器学习领域使用的非常广泛。</p><h2 id=求解最小二乘方法>求解最小二乘方法</h2><ul><li>梯度下降法</li><li>牛顿法</li><li>高斯牛顿法</li><li>LM法</li><li>序列二次规划SQP</li><li>信赖域方法</li><li>进化方法</li></ul><h2 id=牛顿法>牛顿法</h2><p>说到优化方法，那自然不能少了最基本的牛顿法。牛顿法在本科的时候大家应该都学过，这里进行一下回顾：
+然而，有些时候，若目标函数 \(F(x)\) 的不是很容易进行求导，这个时候就需要使用一些迭代的方法，来使得目标函数 \(F(x)\) 下降，这样就可以逐步迭代，求得最小值了。整个的迭代流程如下所示：</p>
+<blockquote>
+<ol>
+<li>给定某个初始值\(x_0\);</li>
+<li>对于第$k$次迭代,寻找一个增量 \(\Delta x_k\) ,使得误差\(||f(x_k+\Delta x_k)||_2^2\) 达到极小值;</li>
+<li>若 \(\Delta x_k\) 足够小,则停止迭代;</li>
+<li>否则,令\(x_{k+1}=x_k+\Delta x_k\),返回第2步.</li>
+</ol></blockquote>
+<p>因此，上诉问题，就变成了不断寻找下降增量 \(\Delta x_k\) 的问题。
+为了方便求解，我们只需要关心误差函数 \(f(x)\) 在迭代值处的局部性质，而不用考虑 \(F(x)\) 在迭代值处的全局性质，这种方法在最优化，机器学习领域使用的非常广泛。</p>
+<h2 id="求解最小二乘方法">求解最小二乘方法</h2>
+<ul>
+<li>梯度下降法</li>
+<li>牛顿法</li>
+<li>高斯牛顿法</li>
+<li>LM法</li>
+<li>序列二次规划SQP</li>
+<li>信赖域方法</li>
+<li>进化方法</li>
+</ul>
+<h2 id="牛顿法">牛顿法</h2>
+<p>说到优化方法，那自然不能少了最基本的牛顿法。牛顿法在本科的时候大家应该都学过，这里进行一下回顾：
 首先定义一个实变量 \(x\) ，和其单变量函数 \(f(x)\) ，函数的一阶导数记为 \(f^{&rsquo;}(x)\) ，二阶导数记为 \(f^{&rsquo;&rsquo;}(x)\) [2]。
-那么首先看一个牛顿法最常用的场景&mdash;&mdash;求根：</p><h3 id=一元函数求根>一元函数求根：</h3><p>假设有根的近似解 \(x_0\) ，则满足假设且更接近根的值为：
+那么首先看一个牛顿法最常用的场景&mdash;&mdash;求根：</p>
+<h3 id="一元函数求根">一元函数求根：</h3>
+<p>假设有根的近似解 \(x_0\) ，则满足假设且更接近根的值为：
 \(x_1=x_0-\frac{f(x_0)}{f^{&rsquo;}x_0}\)
 以此类推，可以得到：
-\(x_{n+1} = x_n - \frac{f(x_n)}{f^{&rsquo;}(x_n)}\)</p><link rel=stylesheet href=/css/hugo-easy-gallery.css><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=https://pic3.zhimg.com/v2-e908f9721cc82415fa7e70c763351f3a_b.webp></div><a href=https://pic3.zhimg.com/v2-e908f9721cc82415fa7e70c763351f3a_b.webp itemprop=contentUrl></a></figure></div><p>因此，根据上面的流程，可以逐步求得 \(f(x)=0\) 的根。
+\(x_{n+1} = x_n - \frac{f(x_n)}{f^{&rsquo;}(x_n)}\)</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://pic3.zhimg.com/v2-e908f9721cc82415fa7e70c763351f3a_b.webp" />
+    </div>
+    <a href="https://pic3.zhimg.com/v2-e908f9721cc82415fa7e70c763351f3a_b.webp" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>因此，根据上面的流程，可以逐步求得 \(f(x)=0\) 的根。
 我们假设当前的近似解为 \(x_n\) ，那么迭代之后的下一个解，列出当前的切线方程为：
 \(y=f^{&rsquo;}(x_n)(x-x_n)+f(x_n)\)
-设定其在 \(x\) 轴的截距为 \(x_{n+1}\) ，将 \((x_{n+1},0)\) 代入方程，可以得到： \(0=f^{&rsquo;}(x_n)(x_{n+1}-x_n)+f(x_n)\)</p><p>即： \(x_{n+1}=x_n-\frac{f(x_n)}{f^{&rsquo;}{x_n}}\)</p><p>因此，我们得到了在函数 \(f(x)\) 上求解 \(f(x)=0\) 的方法。</p><h3 id=求函数的极值>求函数的极值：</h3><p>我们在前面知道了求解函数的根的方法，那么和函数的极值有什么关系呢？我们知道函数的极值的必要条件是其一阶微分等于0。那么求解微分方程为0时候的值，从而函数的极值了。
+设定其在 \(x\) 轴的截距为 \(x_{n+1}\) ，将 \((x_{n+1},0)\) 代入方程，可以得到： \(0=f^{&rsquo;}(x_n)(x_{n+1}-x_n)+f(x_n)\)</p>
+<p>即： \(x_{n+1}=x_n-\frac{f(x_n)}{f^{&rsquo;}{x_n}}\)</p>
+<p>因此，我们得到了在函数 \(f(x)\) 上求解 \(f(x)=0\) 的方法。</p>
+<h3 id="求函数的极值">求函数的极值：</h3>
+<p>我们在前面知道了求解函数的根的方法，那么和函数的极值有什么关系呢？我们知道函数的极值的必要条件是其一阶微分等于0。那么求解微分方程为0时候的值，从而函数的极值了。
 为了能够方便理解整个流程，我们还是拿一元函数 \(f(x)\) 来举例。
-我们首先对其在 \(x=x_0\) 处进行二阶泰勒展开：</p><p>\(f(x)=f(x_0)+f^{&rsquo;}(x_0)(x-x_0)+\frac{f^{&rsquo;&rsquo;}(x_0)}{2}(x-x_0)^2+\sigma(x-x_0)^2\)</p><p>其中，由于泰勒展开的特性，后面 \(\sigma(x-x_0)\) 部分不予考虑，我们只考虑前面展开部分的极值问题：</p><p>\(g(x)=f(x_0)+f^{&rsquo;}(x_0)(x-x_0)+\frac{f^{&rsquo;&rsquo;}(x_0)}{2}(x-x_0)^2\)</p><p>上面的式子是一个一元二次函数，那么其极值就是一阶导数为0的时候，我们可以先微分：</p><p>\(g^{&rsquo;}(x)=f^{&rsquo;}(x_0)+f^{&rsquo;&rsquo;}(x_0)(x-x_0)\)</p><p>令 \(g^{&rsquo;}(x_1)=0\) ，则此时的 \(x_1\) 就是极值（为了方便说明，暂不考虑鞍点的情况）。</p><p>故 \(f^{&rsquo;}(x_0)+f^{&rsquo;&rsquo;}(x_0)(x_1-x_0)=0\)</p><p>\(x_1=x_0-\frac{f^{&rsquo;}(x_0)}{f^{&rsquo;&rsquo;}(x_0)}\)</p><p>以此类推，可以得到迭代公式：</p><p>\(x_{n+1}=x_n-\frac{f^{&rsquo;}(x_n)}{f^{&rsquo;&rsquo;}(x_n)}\)</p><p>根据这个方法就可以不断的迭代下去直到收敛，最终找到极值了。
-如果是多元的情况，则一阶导数 \(f^{&rsquo;}(x)\) 被叫做梯度，也称之为雅可比矩阵 \(J\) [3]（这里不太严谨。严格来说，矩阵的梯度为一阶导的转置，函数的梯度为一阶导，这里并没有进行详细的区分），二阶导数矩阵 \(f^{&rsquo;&rsquo;}(x)\) ，也被叫做海塞矩阵 \(H\) [4]。如果是收敛的话， \(\Delta x=x_{n+1}-x_n \approx 0\) ，则式子可以转化为：</p><p>\(\Delta x = -\frac{f^{&rsquo;}(x_n)}{f^{&rsquo;&rsquo;}(x_n)}=-\frac{J}{H}\)</p><p>也就是说：</p><p>\(H \Delta x=-J\)</p><p>这样，就可以求出能够取得函数 \(f(x)\) 的极值点，继而算出函数 \(f(x)\) 的极值。</p><p>由于牛顿法需要算二阶导数，如果高阶的话，需要算海塞矩阵，这里是有三个缺陷：
+我们首先对其在 \(x=x_0\) 处进行二阶泰勒展开：</p>
+<p>\(f(x)=f(x_0)+f^{&rsquo;}(x_0)(x-x_0)+\frac{f^{&rsquo;&rsquo;}(x_0)}{2}(x-x_0)^2+\sigma(x-x_0)^2\)</p>
+<p>其中，由于泰勒展开的特性，后面 \(\sigma(x-x_0)\) 部分不予考虑，我们只考虑前面展开部分的极值问题：</p>
+<p>\(g(x)=f(x_0)+f^{&rsquo;}(x_0)(x-x_0)+\frac{f^{&rsquo;&rsquo;}(x_0)}{2}(x-x_0)^2\)</p>
+<p>上面的式子是一个一元二次函数，那么其极值就是一阶导数为0的时候，我们可以先微分：</p>
+<p>\(g^{&rsquo;}(x)=f^{&rsquo;}(x_0)+f^{&rsquo;&rsquo;}(x_0)(x-x_0)\)</p>
+<p>令 \(g^{&rsquo;}(x_1)=0\) ，则此时的 \(x_1\) 就是极值（为了方便说明，暂不考虑鞍点的情况）。</p>
+<p>故 \(f^{&rsquo;}(x_0)+f^{&rsquo;&rsquo;}(x_0)(x_1-x_0)=0\)</p>
+<p>\(x_1=x_0-\frac{f^{&rsquo;}(x_0)}{f^{&rsquo;&rsquo;}(x_0)}\)</p>
+<p>以此类推，可以得到迭代公式：</p>
+<p>\(x_{n+1}=x_n-\frac{f^{&rsquo;}(x_n)}{f^{&rsquo;&rsquo;}(x_n)}\)</p>
+<p>根据这个方法就可以不断的迭代下去直到收敛，最终找到极值了。
+如果是多元的情况，则一阶导数 \(f^{&rsquo;}(x)\) 被叫做梯度，也称之为雅可比矩阵 \(J\) [3]（这里不太严谨。严格来说，矩阵的梯度为一阶导的转置，函数的梯度为一阶导，这里并没有进行详细的区分），二阶导数矩阵 \(f^{&rsquo;&rsquo;}(x)\) ，也被叫做海塞矩阵 \(H\) [4]。如果是收敛的话， \(\Delta x=x_{n+1}-x_n \approx 0\) ，则式子可以转化为：</p>
+<p>\(\Delta x = -\frac{f^{&rsquo;}(x_n)}{f^{&rsquo;&rsquo;}(x_n)}=-\frac{J}{H}\)</p>
+<p>也就是说：</p>
+<p>\(H \Delta x=-J\)</p>
+<p>这样，就可以求出能够取得函数 \(f(x)\) 的极值点，继而算出函数 \(f(x)\) 的极值。</p>
+<p>由于牛顿法需要算二阶导数，如果高阶的话，需要算海塞矩阵，这里是有三个缺陷：
 1.要求给定的方程需要二阶可导
 2.非凸函数的海森矩阵不一定有逆
 3.数据较大的时候，海塞矩阵的计算量偏大
-因此，需要思考别的方法来进行最小二乘问题的优化和求解。</p><h2 id=梯度下降法>梯度下降法</h2><p>为了能够更好的进行最值问题的优化求解，我们可以使用高斯牛顿法（GN）和列文伯格-马夸特法（LM）。
+因此，需要思考别的方法来进行最小二乘问题的优化和求解。</p>
+<h2 id="梯度下降法">梯度下降法</h2>
+<p>为了能够更好的进行最值问题的优化求解，我们可以使用高斯牛顿法（GN）和列文伯格-马夸特法（LM）。
 再介绍上面两个方法之前，我们首先介绍一下梯度下降法[5]。
-梯度下降是用于找到可微函数的局部最小值的一阶迭代优化算法。为了使用梯度下降找到函数的局部最小值，我们采取与该数在当前点的梯度（或近似梯度）的负值成比例的步骤。</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=https://pic4.zhimg.com/80/v2-41641f20d0a7ca75a369e9451ab69f6b_720w.jpg></div><a href=https://pic4.zhimg.com/80/v2-41641f20d0a7ca75a369e9451ab69f6b_720w.jpg itemprop=contentUrl></a></figure></div><p>梯度下降法是基于以下的观测原理而来的：
+梯度下降是用于找到可微函数的局部最小值的一阶迭代优化算法。为了使用梯度下降找到函数的局部最小值，我们采取与该数在当前点的梯度（或近似梯度）的负值成比例的步骤。</p>
+
+
+<div class="box" >
+  <figure  itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+    <div class="img">
+      <img itemprop="thumbnail" src="https://pic4.zhimg.com/80/v2-41641f20d0a7ca75a369e9451ab69f6b_720w.jpg" />
+    </div>
+    <a href="https://pic4.zhimg.com/80/v2-41641f20d0a7ca75a369e9451ab69f6b_720w.jpg" itemprop="contentUrl"></a>
+  </figure>
+</div>
+
+<p>梯度下降法是基于以下的观测原理而来的：
 如果实值函数 \(f(x)\) 在点 \(x=a\) 处可微且有定义，那么函数 \(f(x)\) 在点 \(a\) 处，沿着梯度的反方向\(-\Delta f(a)\) 下降的最快。
-因此，假设有个点 \(b\) ，满足：</p><p>\(b=a-\gamma \Delta f(a) \qquad s.t \qquad \gamma>0 \quad \& \quad r\to0\)</p><p>那么我们就可以得到：</p><p>\(f(a) \ge f(b)\)</p><p>通过这种方法，就可以找到极小值。</p><p>因此，得到迭代公式：</p><p>\(x_{n+1}=x_n - \gamma \Delta f(x_n)\)</p><p>其中， \(\gamma\) 是我们人为设定的参数，通过迭代，就可以得到极值。</p><p>梯度下降法每次都以梯度的反方向下降，所以，有可能会容易走出锯齿路线，从而增加迭代次数。
-<img src=https://pic4.zhimg.com/80/v2-9f3317ee73db262c8419c0f333dcd903_720w.jpg alt></p><h2 id=高斯牛顿法>高斯牛顿法</h2><p>如果代入到最小二乘问题中，牛顿法和梯度下降法都是针对目标函数 \(F(x_k)\) 来进行求解的，这样，就不可避免的需要求得海塞矩阵 \(H\) ，所以，为了避免这个问题，我们选取了误差函数 \(f(x)\) 来进行优化求解：</p><p>\(minF(x)=\frac{1}{2}||f(x)||^2_2\)</p><p>那么，我们从上面的迭代步骤2中可以看到：</p><ol><li>给定某个初始值\(x_0\);</li><li>对于第 \(k\) 次迭代,寻找一个增量\(\Delta x_k\),使得误差 \(||f(x_k+\Delta x_k)||^2_2\) 达到极小值;</li><li>若干 \(\Delta x_k\) 足够小,则停止迭代;</li><li>否则,令\(x_{k+1}=x_k+\Delta x_k\),返回第2步</li></ol><p>那么，我们对 \(f(x+\Delta x)\) 进行一阶泰勒展开。</p><p>\(f(x+\Delta x) \approx f(x)+J(x)^T \Deltax+ \sigma(\Delta x)\)</p><p>我们需要求 \(\Delta x\) 使得上面的式子 \(||f(x+\Delta x)||^2_2\) 有最小值，所以，我们可以得到最小二乘问题为：</p><p>\(\Delta x^* = argmin \frac{1}{2}||f(x+\Delta x)||^2_2 \approx argmin \frac{1}{2}||f(x)+J(x)^T \Delta x||^2_2\)</p><p>为了求极值，对其求导：</p><p>\(m(x)=\frac{1}{2}||f(x)+J(x)^T \Delta x||^2 = \frac{1}{2}(f(x)+J(x)^T \Delta x)^T(f(x)+J(x)^T \Delta x)\)</p><p>\(=\frac{1}{2}(||f(x)||^2+2f(x)J(x)^T \Delta x + \Delta x^TJ(x)J(x)^T\Delta x)\)</p><p>故，对其求导可以得到：</p><p>\(m^{&rsquo;}(x)=J(x)f(x)+J(x)J(x)^T\Delta x\)</p><p>则，此时可以转化为线性求解问题：</p><p>\(m^{&rsquo;}(x)=0 \quad \to \quad J(x)J(x)^T\Delta x = -J(x)f(x)\)</p><p>令 \(J(x)J(x)^T\) 定义为 \(H(x)\) ，令 \(-J(x)f(x)\) 定义为 \(g(x)\) ，则此时变为了：</p><p>\(H\Delta x = g \qquad s.t \qquad H=JJ^T \quad \& \quad g=-Jf\)</p><p>这样，就可以优化求解了。上面的最小二乘的优化步骤就可以变为[6]：</p><ol><li>给定某个初始值\(x\);</li><li>对于第 \(k\) 次迭代,求出当前的雅克比矩阵\(J(x_k)\) 和误差\(f(x_k)\)</li><li>求解增量方程:\(H\Delta x_k = g\)</li><li>若 \(\Delta x_k\) 足够小,则停止迭代</li><li>否则,令\(x_{k+1}=x_k+ \Delta x_k\) ,返回第2步</li></ol><p>相比较于传统的最小二乘求解方法，只更改了两个步骤。该方法的优点和缺点如下：</p><p>优点：</p><p>避免了求海塞矩阵，大大减少了计算量。
-缺点：</p><p>为了求解 \(H\) ，需要 \(H\) 矩阵可逆，但是实际上 \(JJ^T\) 只有半正定性，所以，当为奇异矩阵的时候，稳定性较差，算法不收敛。
+因此，假设有个点 \(b\) ，满足：</p>
+<p>\(b=a-\gamma \Delta f(a) \qquad s.t \qquad \gamma&gt;0 \quad \&amp; \quad r\to0\)</p>
+<p>那么我们就可以得到：</p>
+<p>\(f(a) \ge f(b)\)</p>
+<p>通过这种方法，就可以找到极小值。</p>
+<p>因此，得到迭代公式：</p>
+<p>\(x_{n+1}=x_n - \gamma \Delta f(x_n)\)</p>
+<p>其中， \(\gamma\) 是我们人为设定的参数，通过迭代，就可以得到极值。</p>
+<p>梯度下降法每次都以梯度的反方向下降，所以，有可能会容易走出锯齿路线，从而增加迭代次数。
+
+  <img src="https://pic4.zhimg.com/80/v2-9f3317ee73db262c8419c0f333dcd903_720w.jpg" alt="">
+
+</p>
+<h2 id="高斯牛顿法">高斯牛顿法</h2>
+<p>如果代入到最小二乘问题中，牛顿法和梯度下降法都是针对目标函数 \(F(x_k)\) 来进行求解的，这样，就不可避免的需要求得海塞矩阵 \(H\) ，所以，为了避免这个问题，我们选取了误差函数 \(f(x)\) 来进行优化求解：</p>
+<p>\(minF(x)=\frac{1}{2}||f(x)||^2_2\)</p>
+<p>那么，我们从上面的迭代步骤2中可以看到：</p>
+<ol>
+<li>给定某个初始值\(x_0\);</li>
+<li>对于第 \(k\) 次迭代,寻找一个增量\(\Delta x_k\),使得误差 \(||f(x_k+\Delta x_k)||^2_2\) 达到极小值;</li>
+<li>若干 \(\Delta x_k\) 足够小,则停止迭代;</li>
+<li>否则,令\(x_{k+1}=x_k+\Delta x_k\),返回第2步</li>
+</ol>
+<p>那么，我们对 \(f(x+\Delta x)\) 进行一阶泰勒展开。</p>
+<p>\(f(x+\Delta x) \approx f(x)+J(x)^T \Deltax+ \sigma(\Delta x)\)</p>
+<p>我们需要求 \(\Delta x\) 使得上面的式子 \(||f(x+\Delta x)||^2_2\) 有最小值，所以，我们可以得到最小二乘问题为：</p>
+<p>\(\Delta x^* = argmin \frac{1}{2}||f(x+\Delta x)||^2_2 \approx argmin \frac{1}{2}||f(x)+J(x)^T \Delta x||^2_2\)</p>
+<p>为了求极值，对其求导：</p>
+<p>\(m(x)=\frac{1}{2}||f(x)+J(x)^T \Delta x||^2 = \frac{1}{2}(f(x)+J(x)^T \Delta x)^T(f(x)+J(x)^T \Delta x)\)</p>
+<p>\(=\frac{1}{2}(||f(x)||^2+2f(x)J(x)^T \Delta x + \Delta x^TJ(x)J(x)^T\Delta x)\)</p>
+<p>故，对其求导可以得到：</p>
+<p>\(m^{&rsquo;}(x)=J(x)f(x)+J(x)J(x)^T\Delta x\)</p>
+<p>则，此时可以转化为线性求解问题：</p>
+<p>\(m^{&rsquo;}(x)=0 \quad \to \quad J(x)J(x)^T\Delta x = -J(x)f(x)\)</p>
+<p>令 \(J(x)J(x)^T\) 定义为 \(H(x)\) ，令 \(-J(x)f(x)\) 定义为 \(g(x)\) ，则此时变为了：</p>
+<p>\(H\Delta x = g \qquad s.t \qquad H=JJ^T \quad \&amp; \quad g=-Jf\)</p>
+<p>这样，就可以优化求解了。上面的最小二乘的优化步骤就可以变为[6]：</p>
+<ol>
+<li>给定某个初始值\(x\);</li>
+<li>对于第 \(k\) 次迭代,求出当前的雅克比矩阵\(J(x_k)\) 和误差\(f(x_k)\)</li>
+<li>求解增量方程:\(H\Delta x_k = g\)</li>
+<li>若 \(\Delta x_k\) 足够小,则停止迭代</li>
+<li>否则,令\(x_{k+1}=x_k+ \Delta x_k\) ,返回第2步</li>
+</ol>
+<p>相比较于传统的最小二乘求解方法，只更改了两个步骤。该方法的优点和缺点如下：</p>
+<p>优点：</p>
+<p>避免了求海塞矩阵，大大减少了计算量。
+缺点：</p>
+<p>为了求解 \(H\) ，需要 \(H\) 矩阵可逆，但是实际上 \(JJ^T\) 只有半正定性，所以，当为奇异矩阵的时候，稳定性较差，算法不收敛。
 如果求出来的步长 \(\Delta x_k\) 太大，会导致其局部近似不精确，严重的时候，可能无法保证迭代收敛。
 容易和梯度下降法一样，陷入锯齿状，导致迭代次数较长。
-不过，为了能够更好的进行最小二乘问题的求解，我们可以使用列文伯格-马夸特法(LM)来进行求解。</p><h2 id=列文伯格-马夸特法><code>列文伯格-马夸特法</code></h2><p>该方法是在高斯牛顿法的基础上进行的改进，基本的思路和原理和高斯牛顿法一样。</p><p>在高斯牛顿法的缺点中，可以看到，有一点使容易进入锯齿状，导致迭代的次数较长。所以，为了避免其步长过大导致的问题，该方法提出了信赖区域，设定一个区域。使得步长能够受到控制[7]。</p><p>在更新迭代的过程中，为了判定近似值的好坏，我们设定了一个评判指标：</p><p>\(\rho = \frac{f(x+\Delta x)-f(x)}{J(x)^T\Delta x}\)</p><p>这个指标就是我们的近似指标，可以看到其分为以下几种情况：</p><p>\(\rho\) 接近1，近似是好的，不需要更改；
+不过，为了能够更好的进行最小二乘问题的求解，我们可以使用列文伯格-马夸特法(LM)来进行求解。</p>
+<h2 id="列文伯格-马夸特法"><code>列文伯格-马夸特法</code></h2>
+<p>该方法是在高斯牛顿法的基础上进行的改进，基本的思路和原理和高斯牛顿法一样。</p>
+<p>在高斯牛顿法的缺点中，可以看到，有一点使容易进入锯齿状，导致迭代的次数较长。所以，为了避免其步长过大导致的问题，该方法提出了信赖区域，设定一个区域。使得步长能够受到控制[7]。</p>
+<p>在更新迭代的过程中，为了判定近似值的好坏，我们设定了一个评判指标：</p>
+<p>\(\rho = \frac{f(x+\Delta x)-f(x)}{J(x)^T\Delta x}\)</p>
+<p>这个指标就是我们的近似指标，可以看到其分为以下几种情况：</p>
+<p>\(\rho\) 接近1，近似是好的，不需要更改；
 \(\rho\) 太小，则实际减少的值小于近似减少的值，近似较大，需要缩小近似的范围；
 \(\rho\) 太大，则实际减少的值大于近似减少的值，近似较小，需要扩大近似的范围。
-这样的话，就可以动态调整步长了。</p><p>通过近似指标，我们可以设定信赖区域的大小。当没有接近我们设定的阈值，则不断调整动态区域，直到找到好的近似结果。</p><p>当找到符合要求的近似结果后，就可以进行后续正常的迭代更新了。</p><p>因此，使用该信赖区域后，可以更新算法流程：</p><ol><li>给定某个初始值\(x_0\);</li><li>对于第 \(k\) 次迭代,在高斯牛顿法的基础上加上信赖区域;</li></ol><p>\(min \frac{1}{2}||f(x_k)+J(x_k)^T\Delta x_k||^2, \qquad s.t \qquad ||D\Delta x_k||^2 \le \mu\)
-其中,\(\mu\) 是信赖半径, \(D\) 位系数矩阵</p><ol><li>计算近似指标\(\rho\)</li></ol><p>\(\rho = \frac{f(x+ \Delta x)-f(x)}{J(x)^T\Delta x}\)</p><ol><li>根据经验值,设定:</li></ol><p>1). 若 \(\rho \ge \frac{3}{4}\), 则设置\(\mu = 2\mu\) ,跳转到第6步
+这样的话，就可以动态调整步长了。</p>
+<p>通过近似指标，我们可以设定信赖区域的大小。当没有接近我们设定的阈值，则不断调整动态区域，直到找到好的近似结果。</p>
+<p>当找到符合要求的近似结果后，就可以进行后续正常的迭代更新了。</p>
+<p>因此，使用该信赖区域后，可以更新算法流程：</p>
+<ol>
+<li>给定某个初始值\(x_0\);</li>
+<li>对于第 \(k\) 次迭代,在高斯牛顿法的基础上加上信赖区域;</li>
+</ol>
+<p>\(min \frac{1}{2}||f(x_k)+J(x_k)^T\Delta x_k||^2, \qquad s.t \qquad ||D\Delta x_k||^2 \le \mu\)
+其中,\(\mu\) 是信赖半径, \(D\) 位系数矩阵</p>
+<ol>
+<li>计算近似指标\(\rho\)</li>
+</ol>
+<p>\(\rho = \frac{f(x+ \Delta x)-f(x)}{J(x)^T\Delta x}\)</p>
+<ol>
+<li>根据经验值,设定:</li>
+</ol>
+<p>1). 若 \(\rho \ge \frac{3}{4}\), 则设置\(\mu = 2\mu\) ,跳转到第6步
 2). 若 \(\rho \le \frac{1}{4}\), 则设置\(\mu = 0.5\mu\) ,跳转到第6步
-3). 若 \(\rho\) 大于设定的阈值,则跳转至第5步,求解\(\Delta x_k\),令\(\Delta x_{k+1}=x_k+\Delta x_k\)</p><ol><li>求解增量方程:\((H + \lambda I)\Delta x_k = g\) ;</li><li>若 \(\Delta x_k\) 足够小,则停止迭代,否则,返回第2步.</li></ol><p>至于增量方程的获取，可以通过拉格朗日函数来求解：</p><p>\(min \frac{1}{2}||f(x_k)+J(x_k)^T\Delta x_k||^2, \qquad s.t \qquad ||D\Delta x_k||^2 \le \mu\)</p><p>构建拉格朗日函数， \(\lambda\) 是系数因子：</p><p>\(L(\Delta x,\lambda) = \frac{1}{2}||f(x)+J(x)^T\Delta x||^2+\frac{\lambda}{2}(||D\Delta x||^2-\mu)\)</p><p>这样的话，化简后求导就可以得到：</p><p>\(J(x)f(x)+J(x)J^T(x)\Delta x + \lambda D^TD\Delta x=0\)</p><p>我们化简后得到：</p><p>\((JJT+\lambda D^TD)\Delta x=-Jf\)</p><p>在本文中，我们令 \(H=JJ^T,g=-Jf\) 。在实际使用中，通常用 \(I\) 来代替 \(D^TD\) 。所以，公式就变为：</p><p>\((H+\lambda I)\Delta x_k=g\)</p><p>这样，就可以得到对应的增量方程了。</p><p>代入算法流程中，最终就可以优化得到最小二乘问题的极小值了。</p><h2 id=几种方法的总结与联系>几种方法的总结与联系</h2><p>我们已经知晓了四种优化的方法，分别是：</p><p>牛顿法： \(H\Delta x=-J \quad s.t \quad H=f^{&rsquo;&rsquo;}(x_k),J=f{&rsquo;}(x_k)\)
+3). 若 \(\rho\) 大于设定的阈值,则跳转至第5步,求解\(\Delta x_k\),令\(\Delta x_{k+1}=x_k+\Delta x_k\)</p>
+<ol>
+<li>求解增量方程:\((H + \lambda I)\Delta x_k = g\) ;</li>
+<li>若 \(\Delta x_k\) 足够小,则停止迭代,否则,返回第2步.</li>
+</ol>
+<p>至于增量方程的获取，可以通过拉格朗日函数来求解：</p>
+<p>\(min \frac{1}{2}||f(x_k)+J(x_k)^T\Delta x_k||^2, \qquad s.t \qquad ||D\Delta x_k||^2 \le \mu\)</p>
+<p>构建拉格朗日函数， \(\lambda\) 是系数因子：</p>
+<p>\(L(\Delta x,\lambda) = \frac{1}{2}||f(x)+J(x)^T\Delta x||^2+\frac{\lambda}{2}(||D\Delta x||^2-\mu)\)</p>
+<p>这样的话，化简后求导就可以得到：</p>
+<p>\(J(x)f(x)+J(x)J^T(x)\Delta x + \lambda D^TD\Delta x=0\)</p>
+<p>我们化简后得到：</p>
+<p>\((JJT+\lambda D^TD)\Delta x=-Jf\)</p>
+<p>在本文中，我们令 \(H=JJ^T,g=-Jf\) 。在实际使用中，通常用 \(I\) 来代替 \(D^TD\) 。所以，公式就变为：</p>
+<p>\((H+\lambda I)\Delta x_k=g\)</p>
+<p>这样，就可以得到对应的增量方程了。</p>
+<p>代入算法流程中，最终就可以优化得到最小二乘问题的极小值了。</p>
+<h2 id="几种方法的总结与联系">几种方法的总结与联系</h2>
+<p>我们已经知晓了四种优化的方法，分别是：</p>
+<p>牛顿法： \(H\Delta x=-J \quad s.t \quad H=f^{&rsquo;&rsquo;}(x_k),J=f{&rsquo;}(x_k)\)
 梯度下降法： \(\Delta x = -\gamma J \quad s.t \quad J=f^{&rsquo;&rsquo;}(x_k)\)
 高斯牛顿法： \(H\Delta x = g \quad s.t \quad H=JJ^T,g=-Jf\)
 列文伯格-马夸特法： \((H+\lambda I)\Delta x_k = g \quad s.t \quad H=JJ^T,g=-Jf\)
-其实，这四种方法在最小二乘的问题求解中，也是有着联系的。</p><p>我们设定最小二乘问题为：</p><p>\(minF(x)=\frac{1}{2}||f(x)||^2_2\)</p><p>根据针对求解的是目标函数还是误差函数，可以将问题进行分类：</p><h3 id=针对目标函数-f--x--优化>针对目标函数 \(F(x)\) 优化</h3><p>对于目标函数\(F(x)\) 进行一阶泰勒展开：</p><p>\(F(x_k+\Delta x_k) \approx F(x_k)+J(x_k)^T\Delta x_k\)</p><p>此时，此时变成求最小值的问题，则：</p><p>\(\Delta x^*_k=argmin(F(x_k)+J(x_k)^T\Delta x_k)\)</p><p>故，对其求最小值，可以进行求一阶导数为0：</p><p>\(\Delta x_k=-J(x_k)^T\)</p><p>可以看到，如果增加一个步长 \(\lambda\) ， 此时的方法就是梯度下降法。</p><p>如果对目标函数 \(\Delta x^*_k\) 其进行二阶泰勒展开：</p><p>\(F(x_k+\Delta x_k) \approx F(x_k)+J(x_k)^T\Delta x_k+\frac{1}{2}\Delta x^T_kH(x_k)\Delta x_k\)
-则，此时的增量方程为最小二乘问题：</p><p>\(\Delta x^*_k=argmin(F(x_k)+J(x_k)^T\Delta x_k) + \frac{1}{2}\Delta x^T_kH(x_k)\Delta x_k\)</p><p>则，为了求其最小值，对 [公式] 进行求导：</p><p>\(J(x_k)+H(x_k)\Delta x_k=0 \to H*\Delta x = -J\)</p><p>则此时的方法为牛顿法。</p><p>所以，如果从目标函数 \(F(x)\) 入手的话，梯度下降法和牛顿法就是其一阶泰勒展开和二阶泰勒展开的求解方法。</p><h3 id=针对误差函数-f--x--优化>针对误差函数 \(f(x)\) 优化</h3><p>上面正文部分的4和5，就是对误差函数的优化，可以得到两种方法：高斯牛顿法和列文伯格-马夸特法。</p><p>其中，列文伯格-马夸特法是在高斯牛顿法的基础上得来的。他们之间的联系，主要取决于参数 \(\lambda\) ：</p><p>\(\lambda\) 较大的时候，公式变为： \(\lambda I \Delta x_k=g\) ，此时为梯度下降法
+其实，这四种方法在最小二乘的问题求解中，也是有着联系的。</p>
+<p>我们设定最小二乘问题为：</p>
+<p>\(minF(x)=\frac{1}{2}||f(x)||^2_2\)</p>
+<p>根据针对求解的是目标函数还是误差函数，可以将问题进行分类：</p>
+<h3 id="针对目标函数-f--x--优化">针对目标函数 \(F(x)\) 优化</h3>
+<p>对于目标函数\(F(x)\) 进行一阶泰勒展开：</p>
+<p>\(F(x_k+\Delta x_k) \approx F(x_k)+J(x_k)^T\Delta x_k\)</p>
+<p>此时，此时变成求最小值的问题，则：</p>
+<p>\(\Delta x^*_k=argmin(F(x_k)+J(x_k)^T\Delta x_k)\)</p>
+<p>故，对其求最小值，可以进行求一阶导数为0：</p>
+<p>\(\Delta x_k=-J(x_k)^T\)</p>
+<p>可以看到，如果增加一个步长 \(\lambda\) ， 此时的方法就是梯度下降法。</p>
+<p>如果对目标函数 \(\Delta x^*_k\) 其进行二阶泰勒展开：</p>
+<p>\(F(x_k+\Delta x_k) \approx F(x_k)+J(x_k)^T\Delta x_k+\frac{1}{2}\Delta x^T_kH(x_k)\Delta x_k\)
+则，此时的增量方程为最小二乘问题：</p>
+<p>\(\Delta x^*_k=argmin(F(x_k)+J(x_k)^T\Delta x_k) + \frac{1}{2}\Delta x^T_kH(x_k)\Delta x_k\)</p>
+<p>则，为了求其最小值，对 [公式] 进行求导：</p>
+<p>\(J(x_k)+H(x_k)\Delta x_k=0 \to H*\Delta x = -J\)</p>
+<p>则此时的方法为牛顿法。</p>
+<p>所以，如果从目标函数 \(F(x)\) 入手的话，梯度下降法和牛顿法就是其一阶泰勒展开和二阶泰勒展开的求解方法。</p>
+<h3 id="针对误差函数-f--x--优化">针对误差函数 \(f(x)\) 优化</h3>
+<p>上面正文部分的4和5，就是对误差函数的优化，可以得到两种方法：高斯牛顿法和列文伯格-马夸特法。</p>
+<p>其中，列文伯格-马夸特法是在高斯牛顿法的基础上得来的。他们之间的联系，主要取决于参数 \(\lambda\) ：</p>
+<p>\(\lambda\) 较大的时候，公式变为： \(\lambda I \Delta x_k=g\) ，此时为梯度下降法
 \(\lambda\) 较小的时候，公式变为： \(H\Delta x_k=g\) ， 此时为高斯牛顿法。
-所以， LM 法可以在一定程度上避免线性方程组的系数矩阵的非奇异和病态的问题，从而得到更精准，更稳定的增量 \(\Delta x_k\) 。</p><p>通过上面内容，我们知道了牛顿法，梯度下降法，高斯牛顿法和列文伯格-马夸特法的区别和联系了。</p><p>不管是什么方法，初始参数的选取很重要，给一个好的参数，可以减少迭代次数，更快的收敛，从而减少很多的计算量。</p><p>在实际的使用中，可以根据具体的情况来最终决定，到底要使用那种方法来进行优化求解。</p><h2 id=参考>参考</h2><p>[1]<a href=https://en.wikipedia.org/wiki/Least_squares>https://en.wikipedia.org/wiki/Least_squares</a>
-[2]<a href=https://en.wikipedia.org/wiki/Newton%27s_method>https://en.wikipedia.org/wiki/Newton%27s_method</a>
-[3]<a href=https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant>https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant</a>
-[4]<a href=https://en.wikipedia.org/wiki/Hessian_matrix>https://en.wikipedia.org/wiki/Hessian_matrix</a>
-[5]<a href=https://en.wikipedia.org/wiki/Gradient_descent>https://en.wikipedia.org/wiki/Gradient_descent</a>
-[6]<a href=https://github.com/gaoxiang12/slambook2>https://github.com/gaoxiang12/slambook2</a>
-[7]<a href=https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm>https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm</a></p><div class="entry-shang text-center"><p>「真诚赞赏，手留余香」</p><button class="zs show-zs btn btn-bred">赞赏支持</button></div><div class=zs-modal-bg></div><div class=zs-modal-box><div class=zs-modal-head><button type=button class=close>×</button>
-<span class=author><a href=https://cjtong.space/><img src=/img/favicon.png>CJ.Tong Blog</a></span><p class=tip><i></i><span>真诚赞赏，手留余香</span></p></div><div class=zs-modal-body><div class=zs-modal-btns><button class="btn btn-blink" data-num=2>2元</button>
-<button class="btn btn-blink" data-num=5>5元</button>
-<button class="btn btn-blink" data-num=10>10元</button>
-<button class="btn btn-blink" data-num=50>50元</button>
-<button class="btn btn-blink" data-num=100>100元</button>
-<button class="btn btn-blink" data-num=1>任意金额</button></div><div class=zs-modal-pay><button class="btn btn-bred" id=pay-text>2元</button><p>使用<span id=pay-type>微信</span>扫描二维码完成支付</p><img src=/img/reward/wechat-2.png id=pay-image></div></div><div class=zs-modal-footer><label><input type=radio name=zs-type value=wechat class=zs-type checked><span><span class=zs-wechat><img src=/img/reward/wechat-btn.png></span></label>
-<label><input type=radio name=zs-type value=alipay class=zs-type class=zs-alipay><img src=/img/reward/alipay-btn.png></span></label></div></div><script type=text/javascript src=/js/reward.js></script><hr><ul class=pager><li class=previous><a href=/post/os/install/ data-toggle=tooltip data-placement=top title="manjaro install">&larr;
-Previous Post</a></li><li class=next><a href=/post/cmake/cmake_usefull/ data-toggle=tooltip data-placement=top title="cmake 常用使用方法记录">Next
-Post &rarr;</a></li></ul><div id=disqus-comment></div><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//blog-threemen-tech.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><div class="col-lg-2 col-lg-offset-0
-visible-lg-block
-sidebar-container
-catalog-container"><div class=side-catalog><hr class="hidden-sm hidden-xs"><h5><a class=catalog-toggle href=#>CATALOG</a></h5><ul class=catalog-body></ul></div></div><div class="col-lg-8 col-lg-offset-2
-col-md-10 col-md-offset-1
-sidebar-container"><section><hr class="hidden-sm hidden-xs"><h5><a href=/tags/>FEATURED TAGS</a></h5><div class=tags></div></section><section><hr><h5>FRIENDS</h5><ul class=list-inline><li><a target=_blank href=https://zhaozhihan.com>Linda的博客</a></li></ul></section></div></div></div></article><footer><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><ul class="list-inline text-center"><li><a href=mailto:youremail@gmail.com><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
-<i class="fas fa-envelope fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=/img/wechat_qrcode.png><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
-<i class="fab fa-weixin fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=https://github.com/improve100><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
-<i class="fab fa-github fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=https://stackoverflow.com/users/yourstackoverflowid><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
-<i class="fab fa-stack-overflow fa-stack-1x fa-inverse"></i></span></a></li><li><a href rel=alternate type=application/rss+xml title="CJ.Tong Blog"><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
-<i class="fas fa-rss fa-stack-1x fa-inverse"></i></span></a></li></ul><p class="copyright text-muted">Copyright &copy; CJ.Tong Blog 2025<br><a href=https://themes.gohugo.io/hugo-theme-cleanwhite>CleanWhite Hugo Theme</a> by <a href=https://zhaohuabing.com>Huabing</a> |
-<iframe style=margin-left:2px;margin-bottom:-5px frameborder=0 scrolling=0 width=100px height=20px src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true"></iframe></p></div></div></div></footer><script>function loadAsync(e,t){var s=document,o="script",n=s.createElement(o),i=s.getElementsByTagName(o)[0];n.src=e,t&&n.addEventListener("load",function(e){t(null,e)},!1),i.parentNode.insertBefore(n,i)}</script><script>$("#tag_cloud").length!==0&&loadAsync("/js/jquery.tagcloud.js",function(){$.fn.tagcloud.defaults={color:{start:"#bbbbee",end:"#0085a1"}},$("#tag_cloud a").tagcloud()})</script><script>loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js",function(){var e=document.querySelector("nav");e&&FastClick.attach(e)})</script><script type=text/javascript>function generateCatalog(e){_containerSelector="div.post-container";var t,n,s,o,i,a=$(_containerSelector),r=a.find("h1,h2,h3,h4,h5,h6");return $(e).html(""),r.each(function(){n=$(this).prop("tagName").toLowerCase(),o="#"+$(this).prop("id"),t=$(this).text(),i=$('<a href="'+o+'" rel="nofollow" title="'+t+'">'+t+"</a>"),s=$('<li class="'+n+'_nav"></li>').append(i),$(e).append(s)}),!0}generateCatalog(".catalog-body"),$(".catalog-toggle").click(function(e){e.preventDefault(),$(".side-catalog").toggleClass("fold")}),loadAsync("/js/jquery.nav.js",function(){$(".catalog-body").onePageNav({currentClass:"active",changeHash:!1,easing:"swing",filter:"",scrollSpeed:700,scrollOffset:0,scrollThreshold:.2,begin:null,end:null,scrollChange:null,padding:80})})</script></body></html>
+所以， LM 法可以在一定程度上避免线性方程组的系数矩阵的非奇异和病态的问题，从而得到更精准，更稳定的增量 \(\Delta x_k\) 。</p>
+<p>通过上面内容，我们知道了牛顿法，梯度下降法，高斯牛顿法和列文伯格-马夸特法的区别和联系了。</p>
+<p>不管是什么方法，初始参数的选取很重要，给一个好的参数，可以减少迭代次数，更快的收敛，从而减少很多的计算量。</p>
+<p>在实际的使用中，可以根据具体的情况来最终决定，到底要使用那种方法来进行优化求解。</p>
+<h2 id="参考">参考</h2>
+<p>[1]<a href="https://en.wikipedia.org/wiki/Least_squares">https://en.wikipedia.org/wiki/Least_squares</a>
+[2]<a href="https://en.wikipedia.org/wiki/Newton%27s_method">https://en.wikipedia.org/wiki/Newton%27s_method</a>
+[3]<a href="https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant">https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant</a>
+[4]<a href="https://en.wikipedia.org/wiki/Hessian_matrix">https://en.wikipedia.org/wiki/Hessian_matrix</a>
+[5]<a href="https://en.wikipedia.org/wiki/Gradient_descent">https://en.wikipedia.org/wiki/Gradient_descent</a>
+[6]<a href="https://github.com/gaoxiang12/slambook2">https://github.com/gaoxiang12/slambook2</a>
+[7]<a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm</a></p>
+
+
+                
+                
+<div class="entry-shang text-center">
+    
+	    <p>「真诚赞赏，手留余香」</p>
+	
+	<button class="zs show-zs btn btn-bred">赞赏支持</button>
+</div>
+<div class="zs-modal-bg"></div>
+<div class="zs-modal-box">
+	<div class="zs-modal-head">
+		<button type="button" class="close">×</button>
+		<span class="author"><a href="http://localhost:1313/"><img src="/img/favicon.png" />CJ.Tong Blog</a></span>
+        
+	        <p class="tip"><i></i><span>真诚赞赏，手留余香</span></p>
+		
+ 
+	</div>
+	<div class="zs-modal-body">
+		<div class="zs-modal-btns">
+			<button class="btn btn-blink" data-num="2">2元</button>
+			<button class="btn btn-blink" data-num="5">5元</button>
+			<button class="btn btn-blink" data-num="10">10元</button>
+			<button class="btn btn-blink" data-num="50">50元</button>
+			<button class="btn btn-blink" data-num="100">100元</button>
+			<button class="btn btn-blink" data-num="1">任意金额</button>
+		</div>
+		<div class="zs-modal-pay">
+			<button class="btn btn-bred" id="pay-text">2元</button>
+			<p>使用<span id="pay-type">微信</span>扫描二维码完成支付</p>
+			<img src="/img/reward/wechat-2.png"  id="pay-image"/>
+		</div>
+	</div>
+	<div class="zs-modal-footer">
+		<label><input type="radio" name="zs-type" value="wechat" class="zs-type" checked="checked"><span ><span class="zs-wechat"><img src="/img/reward/wechat-btn.png"/></span></label>
+		<label><input type="radio" name="zs-type" value="alipay" class="zs-type" class="zs-alipay"><img src="/img/reward/alipay-btn.png"/></span></label>
+	</div>
+</div>
+<script type="text/javascript" src="/js/reward.js"></script>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/os/install/" data-toggle="tooltip" data-placement="top" title="manjaro install">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+                
+
+                
+
+
+<div id="disqus-comment"></div>
+<div id="disqus_thread"></div>
+<script>
+    window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "blog-threemen-tech" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href="https://zhaozhihan.com">Linda的博客</a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    <li>
+                        <a href="mailto:youremail@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    <li>
+                        <a target="_blank" href="/img/wechat_qrcode.png">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-weixin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/improve100">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://stackoverflow.com/users/yourstackoverflowid">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-stack-overflow fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="CJ.Tong Blog" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fas fa-circle fa-stack-2x"></i>
+                               <i class="fas fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+            
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; CJ.Tong Blog 2025
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow" title="' + t + '">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>
