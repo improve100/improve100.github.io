@@ -19,15 +19,15 @@ on
 Thursday, March 27, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
 col-md-10 col-md-offset-1
 post-container"><h3 id=针孔相机模型>针孔相机模型 <span class=tag><span class=ATTACH>ATTACH</span></span></h3><p>针孔相机模型是很常用，而且有效的模型，它描述了一束光线通过针孔之后，在针孔背面投影成像的关系，基于针孔的投影过程可以通过针孔和畸变两个模型来描述。
-<img src=/ox-hugo/_20250326_224506475a9e7c10a7df74b9d07d85cf95adce.png alt></p><p>模型中有四个坐标系，分别为 <code>world</code> ， <code>camera</code> ， <code>image</code> ， <code>pixel</code></p><ul><li><code>world</code> 为世界坐标系，可以任意指定\[x_w\]轴和\[y_w\]​轴，为上图P点所在坐标系。</li><li><code>camera</code> 为相机坐标系，原点位于小孔,\[z_c\]​轴与光轴重合,\[ x_c \]​轴和\[ y_c \]​轴平行投影面，为上图坐标系\[ X_c Y_c Z_c \]​。</li><li>归一化坐标系，原点位于\[ z_c=1 \]x和y轴与相机坐标系一样。</li><li><code>image</code> 为图像坐标系，原点位于光轴和投影面的交点， x轴和 y轴平行投影面，为上图坐标系 xy，相对于 <code>camera</code> 相差一个缩放(fx,fy)，同时包含畸变。</li><li><code>pixel</code> 为像素坐标系（opencv定义），从小孔向投影面方向看，投影面的左上角为原点,\[uv\]轴和投影面两边重合，该坐标系与图像坐标系处在同一平面，但原点不同，相对于 <code>image</code> 相差一个平移(cx,cy)。</li></ul><h4 id=投影变换>投影变换</h4><ul><li><p>正投影 （空间点->图像点） <span class=tag><span class=ATTACH>ATTACH</span></span></p><ul><li><code>world</code> -> <code>camera</code></li></ul><p>设点在 <code>world</code> 中的坐标为 \[P_w = (x_w,y_w,z_w)^T\] ，在 <code>camera</code> 中的坐标为 \[P_c = (x_c,y_c,z_c)^T\]</p><p>\[\begin{bmatrix}
+<img src=/ox-hugo/_20250326_224506475a9e7c10a7df74b9d07d85cf95adce.png alt></p><p>模型中有四个坐标系，分别为 <code>world</code> ， <code>camera</code> ， <code>image</code> ， <code>pixel</code></p><ul><li><code>world</code> 为世界坐标系，可以任意指定$x_w$轴和\(y_w\)​轴，为上图P点所在坐标系。</li><li><code>camera</code> 为相机坐标系，原点位于小孔,\(z_c\)​轴与光轴重合,$ x_c \(​轴和\) y_c \(​轴平行投影面，为上图坐标系\) X_c Y_c Z_c $​。</li><li>归一化坐标系，原点位于$ z_c=1 $x和y轴与相机坐标系一样。</li><li><code>image</code> 为图像坐标系，原点位于光轴和投影面的交点， x轴和 y轴平行投影面，为上图坐标系 xy，相对于 <code>camera</code> 相差一个缩放(fx,fy)，同时包含畸变。</li><li><code>pixel</code> 为像素坐标系（opencv定义），从小孔向投影面方向看，投影面的左上角为原点,$uv$轴和投影面两边重合，该坐标系与图像坐标系处在同一平面，但原点不同，相对于 <code>image</code> 相差一个平移(cx,cy)。</li></ul><h4 id=投影变换>投影变换</h4><ul><li><p>正投影 （空间点->图像点） <span class=tag><span class=ATTACH>ATTACH</span></span></p><ul><li><code>world</code> -> <code>camera</code></li></ul><p>设点在 <code>world</code> 中的坐标为 \(P_w = (x_w,y_w,z_w)^T\) ，在 <code>camera</code> 中的坐标为 \(P_c = (x_c,y_c,z_c)^T\)</p><p>\(\begin{bmatrix}
 P_c \\
 1
 \end{bmatrix}=T_w^c
 \begin{bmatrix}
 P_w \\
 1
-\end{bmatrix}\]</p><p>其中\[T^c_w\]​为外参，即世界坐标系相对于相机坐标系的变换。</p><ul><li><p><code>camera</code> -> 归一化相机系</p><p>相机坐标系为\[F_s\]，设一平面位于相机坐标 <code>camera</code> 的\[z=1\]上，为归一化平面，其坐标系\[C\]为归一化坐标系。
-<img src=/ox-hugo/_20250326_2245156eb3c8e87889ec1f8cd506b512417325.png.png alt></p><p>根据相似三角形，P点在归一化坐标系的坐标为</p></li></ul><p>\[P_n=
+\end{bmatrix}\)</p><p>其中\(T^c_w\)​为外参，即世界坐标系相对于相机坐标系的变换。</p><ul><li><p><code>camera</code> -> 归一化相机系</p><p>相机坐标系为\(F_s\)，设一平面位于相机坐标 <code>camera</code> 的$z=1$上，为归一化平面，其坐标系$C$为归一化坐标系。
+<img src=/ox-hugo/_20250326_2245156eb3c8e87889ec1f8cd506b512417325.png.png alt></p><p>根据相似三角形，P点在归一化坐标系的坐标为</p></li></ul><p>\(P_n=
 \begin{bmatrix}
 x_c/z_c \\
 y_c/z_c \\
@@ -37,15 +37,15 @@ z_c/z_c
 x_n \\
 y_n \\
 1
-\end{bmatrix}\]</p><ul><li>归一化相机系-> <code>camera</code> -> <code>pixel</code></li></ul><link rel=stylesheet href=/css/hugo-easy-gallery.css><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png></div><a href=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png itemprop=contentUrl></a></figure></div><p>设置图像坐标系上坐标为\[P_i\]​基于图中相似三角形（一般所得图像已经经过处理，完成翻转）可得点P在图像坐标系上坐标为：
-\[\frac{x_i}{f} = \frac{x_c}{z_c} = x_n, \frac{y_i}{f} = \frac{y_c}{z_c} = y_n\]
-设\[\alpha\]和\[\beta\]分别为x和y方向上的每米像素值，设图像中心偏移为 [c_x,c_y​]，
-设像素坐标\[ P_{uv} = (u,v,1)^T \]则
-\[ u = \alpha x_i+c_x = \alpha f x_n +c_x,v = \beta y_i+c_y = \beta f y_n +c_y \]</p><p>设\[f_x = \alpha f, f_y = \beta f\]即</p><p>\[P_{uv}=\begin{bmatrix} f_x&amp;0&amp;c_x \\ 0&amp;f_y&amp;c_y \\ 0&amp;0&amp;1 \end{bmatrix}P_n = K P_n\]</p><p>其中K为内参数矩阵(Camera Intrinsics)。</p><p>因此 <code>world</code> 到 <code>pixel</code> 到关系为
-\[P_{uv}=K_{3 \times 3}T^C_WP_w\]
+\end{bmatrix}\)</p><ul><li>归一化相机系-> <code>camera</code> -> <code>pixel</code></li></ul><link rel=stylesheet href=/css/hugo-easy-gallery.css><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png></div><a href=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png itemprop=contentUrl></a></figure></div><p>设置图像坐标系上坐标为\(P_i\)​基于图中相似三角形（一般所得图像已经经过处理，完成翻转）可得点P在图像坐标系上坐标为：
+\(\frac{x_i}{f} = \frac{x_c}{z_c} = x_n, \frac{y_i}{f} = \frac{y_c}{z_c} = y_n\)
+设$α$和$β\(分别为x和y方向上的每米像素值，设图像中心偏移为 [c_x,c_y​]，
+设像素坐标\) P<sub>uv</sub> = (u,v,1)^T $则
+$ u = α x_i+c_x = α f x_n +c_x,v = β y_i+c_y = β f y_n +c_y $</p><p>设$f_x = α f, f_y = β f$即</p><p>\(P_{uv}=\begin{bmatrix} f_x&amp;0&amp;c_x \\ 0&amp;f_y&amp;c_y \\ 0&amp;0&amp;1 \end{bmatrix}P_n = K P_n\)</p><p>其中K为内参数矩阵(Camera Intrinsics)。</p><p>因此 <code>world</code> 到 <code>pixel</code> 到关系为
+\(P_{uv}=K_{3 \times 3}T^C_WP_w\)
 其中隐含了一次齐次坐标到非齐次坐标的转换，具体坐标系变换流程为</p><p>世界坐标系→相机坐标系(归一化处理)→图像坐标系→像素坐标系
 world→camrea→image→pixel
-\[P_w=(x_w​,y_w​,z_w​,1)^T \rightarrow P_c=(x_c​,y_c​,z_c​,1)^T[P_i​=(x_i​,y_i​,1)^T] \rightarrow P_{uv}=(u,v,1)^T \]</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>//Parameters vector corresponds to
+$P_w=(x_w​,y_w​,z_w​,1)^T → P_c=(x_c​,y_c​,z_c​,1)^T[P_i​=(x_i​,y_i​,1)^T] → P<sub>uv</sub>=(u,v,1)^T $</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>//Parameters vector corresponds to
 </span></span><span style=display:flex><span>//      <span style=color:#f92672>[</span>fx, fy, cx, cy<span style=color:#f92672>]</span>
 </span></span><span style=display:flex><span>// 归一化平面-&gt;pixel
 </span></span><span style=display:flex><span>Eigen::Vector2d Pinhole::project<span style=color:#f92672>(</span>const Eigen::Vector3d <span style=color:#111>&amp;</span>v3D<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
@@ -56,35 +56,31 @@ world→camrea→image→pixel
 </span></span><span style=display:flex><span>    <span style=color:#00a8c8>return</span> res<span style=color:#111>;</span>
 </span></span><span style=display:flex><span><span style=color:#f92672>}</span>
 </span></span><span style=display:flex><span><span style=color:#ae81ff>12345678910</span></span></span></code></pre></div></li></ul><ul><li><p>反投影（图像点->空间点）</p><p>设已知图像点在相机坐标系下的深度为Z
-\[P_w = T^w_c Z K^{-1} P_{uv}\]</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>//Parameters vector corresponds to
+\(P_w = T^w_c Z K^{-1} P_{uv}\)</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>//Parameters vector corresponds to
 </span></span><span style=display:flex><span>//      <span style=color:#f92672>[</span>fx, fy, cx, cy<span style=color:#f92672>]</span>
 </span></span><span style=display:flex><span>// pixel-&gt;归一化平面
 </span></span><span style=display:flex><span>cv::Point3f Pinhole::unproject<span style=color:#f92672>(</span>const cv::Point2f <span style=color:#111>&amp;</span>p2D<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
 </span></span><span style=display:flex><span>    <span style=color:#00a8c8>return</span> cv::Point3f<span style=color:#f92672>((</span>p2D.x - mvParameters<span style=color:#f92672>[</span>2<span style=color:#f92672>])</span> / mvParameters<span style=color:#f92672>[</span>0<span style=color:#f92672>]</span>, <span style=color:#f92672>(</span>p2D.y - mvParameters<span style=color:#f92672>[</span>3<span style=color:#f92672>])</span> / mvParameters<span style=color:#f92672>[</span>1<span style=color:#f92672>]</span>,1.f<span style=color:#f92672>)</span><span style=color:#111>;</span>
-</span></span><span style=display:flex><span><span style=color:#f92672>}</span></span></span></code></pre></div></li></ul><h4 id=畸变>畸变</h4><p>畸变是发生在世界点通过透镜投影到相机坐标系这个过程中的，所以去畸变操作是在相机坐标系下进行的，由于我们经常把世界点投影到归一化相机平面，所以我们在归一化相机平面上对图像去畸变。</p><blockquote><p>一般的去畸变图像需转换到归一化相机平面上进行去畸变后再变换回像素系，而不是直接再图像上进行操作</p></blockquote><p>\[ \begin{cases}x_{corrected}=x(1+k_{1}r^{2}+k_{2}r^{4}+k_{3}r^{6})+2p_{1}xy+p_{2}(r^{2}+2x^{2})\\y_{corrected}=y(1+k_{1}r^{2}+k_{2}r^{4}+k_{3}r^{6})+p_{1}(r^{2}+2y^{2})+2p_{2}xy\end{cases} \]</p><p>上式为对归一化平面上的点进行径向畸变和切向畸变纠正，其中k1、k2、k3为径向畸变，p1、p2为切向畸变，根据需求可以调整使用的参数，不一定要五个全用上。</p><ul><li><p>径向畸变 <span class=tag><span class=ATTACH>ATTACH</span></span></p><p>径向畸变（桶形畸变和枕形畸变）产生原因：光线在远离透镜中心的地方偏折更大，矫正公式：</p><p>\[ \begin{cases}x_{corrected}=x(1+k_{1}r^{2}+k_{2}r^{4}+k_{3}r^{6}\\y_{corrected}=y(1+k_{1}r^{2}+k_{2}r^{4}+k_{3}r^{6})\end{cases} \]</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2246231086b78364c95a43c8973adfaee700b5.png.png></div><a href=/ox-hugo/_20250326_2246231086b78364c95a43c8973adfaee700b5.png.png itemprop=contentUrl></a></figure></div><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2246284f8a82b73a54d90b6c3e150389159546.png.png></div><a href=/ox-hugo/_20250326_2246284f8a82b73a54d90b6c3e150389159546.png.png itemprop=contentUrl></a></figure></div></li></ul><ul><li><p>切向畸变 <span class=tag><span class=ATTACH>ATTACH</span></span></p><p>切向畸变产生原因：相机组装过程不能使透镜和成像平面严格平行引起，矫正公式：</p><p>\[ \begin{cases}x_{corrected}=x+2p_{1}xy+p_{2}(r^{2}+2x^{2}\\y_{corrected}=y+p_{1}(r^{2}+2y^{2})+2p_{2}xy\end{cases} \]</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_22463677c6b67da3e4663fec6ea2c062edb5de.png.png></div><a href=/ox-hugo/_20250326_22463677c6b67da3e4663fec6ea2c062edb5de.png.png itemprop=contentUrl></a></figure></div></li></ul><h4 id=小结>小结</h4><p>综上，16个单目相机的参数：</p><ul><li>10个内部参数（内参，只与相机有关):<ul><li>5个内部矩阵参数K:\[f,d_x,d_y,u_0,v_0 f,dx​,dy​,u0​,v0\](也可视作4个参数\[f_x,f_y,u_0,v_0 fx​,fy​,u0​,v0\]​)</li><li>5个畸变参数D:\[k_1,k_2,k_3,p_1,p_2\]</li></ul></li><li>6个外部参数(外参，描述目标点的世界坐标到像素坐标的投影关系):<ul><li>3个旋转参数R</li><li>3个平移参数t</li></ul></li></ul><h3 id=鱼眼相机模型>鱼眼相机模型 <span class=tag><span class=ATTACH>ATTACH</span></span></h3><p>:PROPERTIES:
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span></span></span></code></pre></div></li></ul><h4 id=畸变>畸变</h4><p>畸变是发生在世界点通过透镜投影到相机坐标系这个过程中的，所以去畸变操作是在相机坐标系下进行的，由于我们经常把世界点投影到归一化相机平面，所以我们在归一化相机平面上对图像去畸变。</p><blockquote><p>一般的去畸变图像需转换到归一化相机平面上进行去畸变后再变换回像素系，而不是直接再图像上进行操作</p></blockquote><p>$ \begin{cases}x<sub>corrected</sub>=x(1+k<sub>1</sub>r<sup>2</sup>+k<sub>2</sub>r<sup>4</sup>+k<sub>3</sub>r<sup>6</sup>)+2p<sub>1</sub>xy+p<sub>2</sub>(r<sup>2</sup>+2x<sup>2</sup>)\\y<sub>corrected</sub>=y(1+k<sub>1</sub>r<sup>2</sup>+k<sub>2</sub>r<sup>4</sup>+k<sub>3</sub>r<sup>6</sup>)+p<sub>1</sub>(r<sup>2</sup>+2y<sup>2</sup>)+2p<sub>2</sub>xy\end{cases} $</p><p>上式为对归一化平面上的点进行径向畸变和切向畸变纠正，其中k1、k2、k3为径向畸变，p1、p2为切向畸变，根据需求可以调整使用的参数，不一定要五个全用上。</p><ul><li><p>径向畸变 <span class=tag><span class=ATTACH>ATTACH</span></span></p><p>径向畸变（桶形畸变和枕形畸变）产生原因：光线在远离透镜中心的地方偏折更大，矫正公式：</p><p>$ \begin{cases}x<sub>corrected</sub>=x(1+k<sub>1</sub>r<sup>2</sup>+k<sub>2</sub>r<sup>4</sup>+k<sub>3</sub>r<sup>6</sup>\\y<sub>corrected</sub>=y(1+k<sub>1</sub>r<sup>2</sup>+k<sub>2</sub>r<sup>4</sup>+k<sub>3</sub>r<sup>6</sup>)\end{cases} $</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2246231086b78364c95a43c8973adfaee700b5.png.png></div><a href=/ox-hugo/_20250326_2246231086b78364c95a43c8973adfaee700b5.png.png itemprop=contentUrl></a></figure></div><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2246284f8a82b73a54d90b6c3e150389159546.png.png></div><a href=/ox-hugo/_20250326_2246284f8a82b73a54d90b6c3e150389159546.png.png itemprop=contentUrl></a></figure></div></li></ul><ul><li><p>切向畸变 <span class=tag><span class=ATTACH>ATTACH</span></span></p><p>切向畸变产生原因：相机组装过程不能使透镜和成像平面严格平行引起，矫正公式：</p><p>$ \begin{cases}x<sub>corrected</sub>=x+2p<sub>1</sub>xy+p<sub>2</sub>(r<sup>2</sup>+2x<sup>2</sup>\\y<sub>corrected</sub>=y+p<sub>1</sub>(r<sup>2</sup>+2y<sup>2</sup>)+2p<sub>2</sub>xy\end{cases} $</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_22463677c6b67da3e4663fec6ea2c062edb5de.png.png></div><a href=/ox-hugo/_20250326_22463677c6b67da3e4663fec6ea2c062edb5de.png.png itemprop=contentUrl></a></figure></div></li></ul><h4 id=小结>小结</h4><p>综上，16个单目相机的参数：</p><ul><li>10个内部参数（内参，只与相机有关):<ul><li>5个内部矩阵参数K:\(f,d_x,d_y,u_0,v_0 f,dx​,dy​,u0​,v0\)(也可视作4个参数\(f_x,f_y,u_0,v_0 fx​,fy​,u0​,v0\)​)</li><li>5个畸变参数D:\(k_1,k_2,k_3,p_1,p_2\)</li></ul></li><li>6个外部参数(外参，描述目标点的世界坐标到像素坐标的投影关系):<ul><li>3个旋转参数R</li><li>3个平移参数t</li></ul></li></ul><h3 id=鱼眼相机模型>鱼眼相机模型 <span class=tag><span class=ATTACH>ATTACH</span></span></h3><p>:PROPERTIES:
 :ID: fd0b762a-eb90-4c31-a240-44d39978ed1
 :END
 鱼眼相机与针孔相机原理不同，采用非相似成像，在成像过程中引入畸变，通过对直径空间的压缩，突破成像视角的局限，从而达到广角成像，所以鱼眼镜头是一种极端得广角镜头，通常焦距小于等于16mm并且视角接近或等于180°（在工程上视角超过140°的镜头即统称为鱼眼镜头）。</p><p>鱼眼相机成像模型近似为 <strong>单位球面投影模型</strong> ，一般将鱼眼相机成像过程分解成两步：</p><ol><li><p>先将三维空间点线性的投影到虚拟单位球面上</p></li><li><p>随后将单位球面上的点投影到图像平面上，这个过程是非线性的</p></li></ol><p>由于鱼眼相机所成影像存在畸变，其中径向畸变非常严重，因此其畸变模型主要考虑径向畸变。</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/home/maxsense/SparkleShare/mynotes/.attach/18/1a3438-5a32-4203-9164-b7f04ffe18da/_20250326_224454a2cb49694570d110c36539ca5313da39.png.png></div><a href=/home/maxsense/SparkleShare/mynotes/.attach/18/1a3438-5a32-4203-9164-b7f04ffe18da/_20250326_224454a2cb49694570d110c36539ca5313da39.png.png itemprop=contentUrl></a></figure></div><p>鱼眼相机的投影函数是为了尽可能将庞大的场景投影到有限的图像平面所设计的。根据投影函数的不同，鱼眼相机的设计模型大致分为</p><ul><li><p>等距投影
-\[ r_d​=f\theta\]</p></li><li><p>等立体角投影
-\[ r_d = 2 f \sin(\frac{\theta}{2})\]</p></li><li><p>正交投影
-\[r_d = 2 f \sin(\theta)\]</p></li><li><p>体视投影
-\[r_d = 2f \tan(\theta)\]</p></li></ul><p>相机的成像模型实际上表征的是成像的像高与入射角之间的映射关系。</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250327_0956096fe7d650ca6d92f2b6559304c38f3110.png.png></div><a href=/ox-hugo/_20250327_0956096fe7d650ca6d92f2b6559304c38f3110.png.png itemprop=contentUrl></a></figure></div><h4 id=通用鱼眼相机模型-kannala-brandt>通用鱼眼相机模型-Kannala-Brandt</h4><p>Kannala-Brandt模型主要用于第二步，单位球面上的点投影到图像平面，该步骤为非线性，不同投影可以统一为
-\[r_d =f\theta _d\]
+$ r_d​=fθ$</p></li><li><p>等立体角投影
+$ r_d = 2 f sin(\frac{\theta}{2})$</p></li><li><p>正交投影
+\(r_d = 2 f \sin(\theta)\)</p></li><li><p>体视投影
+\(r_d = 2f \tan(\theta)\)</p></li></ul><p>相机的成像模型实际上表征的是成像的像高与入射角之间的映射关系。</p><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250327_0956096fe7d650ca6d92f2b6559304c38f3110.png.png></div><a href=/ox-hugo/_20250327_0956096fe7d650ca6d92f2b6559304c38f3110.png.png itemprop=contentUrl></a></figure></div><h4 id=通用鱼眼相机模型-kannala-brandt>通用鱼眼相机模型-Kannala-Brandt</h4><p>Kannala-Brandt模型主要用于第二步，单位球面上的点投影到图像平面，该步骤为非线性，不同投影可以统一为
+\(r_d =f\theta _d\)
 因sin，tan的泰勒展开都是 <strong>奇次项形式</strong> ，取前5项可得
-\[\theta_d= k_0\theta + k_1 \theta^3 + k_2 \theta^5 + k_3 \theta^7 + k_4 \theta^9\]</p><ul><li><p>正投影（空间点->图像点）</p><ul><li><p>世界系->归一化相机系</p><p>设外参为 \[T^c_w\]</p></li></ul><p>\[ \begin{bmatrix}
-X_c \\
-Y_c \\
-Z_c
+\(\theta_d= k_0\theta + k_1 \theta^3 + k_2 \theta^5 + k_3 \theta^7 + k_4 \theta^9\)</p><ul><li><p>正投影（空间点->图像点）</p><ul><li><p>世界系->归一化相机系</p><p>设外参为 \(T^c_w\)</p></li></ul><p>$ \begin{bmatrix}
+X_c<br>Y_c<br>Z_c
 \end{bmatrix}=R
 \begin{bmatrix}
-X_w \\
-Y_w \\
-Z_w
-\end{bmatrix} + t \]</p><p>\[x_c = \frac{X_c}{Z_c}, y_c=\frac{Y_c}{Z_c} \]</p><ul><li>归一化相机系->虚拟单位球面</li></ul><p>\[r^2 = x^2_c + y^2_c\]
-\[\theta = arctan( r)\]
-\[\theta_d = k_0\theta + k_1 \theta^3 + k_2 \theta^5 + k_3 \theta^7 + k_4 \theta^9\]
-\[ x_d=\frac{\theta_d}{r}x_c, y_d=\frac{\theta_d}{r}y_c\]</p><ul><li>虚拟单位球面->图像系
-\[ u=f_xx_d+c_x, \\ v=f_yy_d+c_y ​\]
+X_w<br>Y_w<br>Z_w
+\end{bmatrix} + t $</p><p>$x_c = \frac{X_c}{Z_c}, y_c=\frac{Y_c}{Z_c} $</p><ul><li>归一化相机系->虚拟单位球面</li></ul><p>\(r^2 = x^2_c + y^2_c\)
+\(\theta = arctan( r)\)
+\(\theta_d = k_0\theta + k_1 \theta^3 + k_2 \theta^5 + k_3 \theta^7 + k_4 \theta^9\)
+$ x_d=\frac{\theta_d}{r}x_c, y_d=\frac{\theta_d}{r}y_c$</p><ul><li>虚拟单位球面->图像系
+$ u=f_xx_d+c_x, \\ v=f_yy_d+c_y ​$
 变换后为拉伸变形图像。<div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>  // Parameters vector corresponds to
 </span></span><span style=display:flex><span>  // <span style=color:#f92672>[</span>fx, fy, cx, cy, k0, k1, k2, k3<span style=color:#f92672>]</span>
 </span></span><span style=display:flex><span>  // 相机系-&gt;图像系
@@ -106,10 +102,10 @@ Z_w
 </span></span><span style=display:flex><span>      res<span style=color:#f92672>[</span>1<span style=color:#f92672>]</span> <span style=color:#f92672>=</span> mvParameters<span style=color:#f92672>[</span>1<span style=color:#f92672>]</span> * r * sin<span style=color:#f92672>(</span>psi<span style=color:#f92672>)</span> + mvParameters<span style=color:#f92672>[</span>3<span style=color:#f92672>]</span><span style=color:#111>;</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>      <span style=color:#00a8c8>return</span> res<span style=color:#111>;</span>
-</span></span><span style=display:flex><span>  <span style=color:#f92672>}</span></span></span></code></pre></div></li></ul></li></ul><ul><li><p>反投影（图像点->空间点）</p><ul><li><p>图像系->虚拟单位球面</p><p>\[ x_d = \frac{u-c_x}{f_X},y_d = \frac{v-c_y}{f_y} \]</p></li><li><p>虚拟单位球面->归一化相机系->相机系
-\[\theta_d = \sqrt{x_d^2+y_d^2}\]
-使用牛頓法 (Newton’s method)求解 \[\theta\]
-\[\theta = Newton(\\theta\_d.k\_1,k\_2,k\_3,k\_4)\]</p><p>设相机系下深度为Z</p><p>\[P_c=\begin{bmatrix}
+</span></span><span style=display:flex><span>  <span style=color:#f92672>}</span></span></span></code></pre></div></li></ul></li></ul><ul><li><p>反投影（图像点->空间点）</p><ul><li><p>图像系->虚拟单位球面</p><p>$ x_d = \frac{u-c_x}{f_X},y_d = \frac{v-c_y}{f_y} $</p></li><li><p>虚拟单位球面->归一化相机系->相机系
+\(\theta_d = \sqrt{x_d^2+y_d^2}\)
+使用牛頓法 (Newton’s method)求解 \(\theta\)
+\(\theta = Newton(\\theta\_d.k\_1,k\_2,k\_3,k\_4)\)</p><p>设相机系下深度为Z</p><p>\(P_c=\begin{bmatrix}
 X_c \\
 Y_c \\
 Z_c
@@ -118,8 +114,8 @@ Z_c
 x_c \\
 y_c \\
 1
-\end{bmatrix}\]</p></li></ul><ul><li>相机系->世界系
-\[P_w = T^w_c P_c\]<div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>  // Parameters vector corresponds to
+\end{bmatrix}\)</p></li></ul><ul><li>相机系->世界系
+\(P_w = T^w_c P_c\)<div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>  // Parameters vector corresponds to
 </span></span><span style=display:flex><span>  // <span style=color:#f92672>[</span>fx, fy, cx, cy, k0, k1, k2, k3<span style=color:#f92672>]</span>
 </span></span><span style=display:flex><span>  // 图像系-&gt;归一化相机系
 </span></span><span style=display:flex><span>  cv::Point3f KannalaBrandt8::unproject<span style=color:#f92672>(</span>const cv::Point2f <span style=color:#111>&amp;</span>p2D<span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
