@@ -16,18 +16,18 @@
 <a class=navbar-brand href=/>CJ.Tong Blog</a></div><div id=huxblog_navbar><div class=navbar-collapse><ul class="nav navbar-nav navbar-right"><li><a href=/>All Posts</a></li><li><a href=/archive//>ARCHIVE</a></li><li><a href=/notes//>NOTES</a></li><li><a href=/about//>ABOUT</a></li><li><a href=/search><i class="fa fa-search"></i></a></li></ul></div></div></div></nav><script>var $body=document.body,$toggle=document.querySelector(".navbar-toggle"),$navbar=document.querySelector("#huxblog_navbar"),$collapse=document.querySelector(".navbar-collapse");$toggle.addEventListener("click",handleMagic);function handleMagic(){$navbar.className.indexOf("in")>0?($navbar.className=" ",setTimeout(function(){$navbar.className.indexOf("in")<0&&($collapse.style.height="0px")},400)):($collapse.style.height="auto",$navbar.className+=" in")}</script><style type=text/css>header.intro-header{background-image:url(/img/home-bg-jeep.jpg)}</style><header class=intro-header><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><div class=post-heading><div class=tags></div><h1>相机模型</h1><h2 class=subheading></h2><span class=meta>Posted by
 [cjtong]
 on
-Thursday, March 27, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
+Friday, March 28, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
 col-md-10 col-md-offset-1
 post-container"><h3 id=针孔相机模型>针孔相机模型</h3><p>针孔相机模型是很常用，而且有效的模型，它描述了一束光线通过针孔之后，在针孔背面投影成像的关系，基于针孔的投影过程可以通过针孔和畸变两个模型来描述。
-<img src=/ox-hugo/_20250326_224506475a9e7c10a7df74b9d07d85cf95adce.png alt></p><p>模型中有四个坐标系，分别为 <code>world</code> ， <code>camera</code> ， <code>image</code> ， <code>pixel</code></p><ul><li><code>world</code> 为世界坐标系，可以任意指定 \(x_w\) 轴和\(y_w\)​轴，为上图P点所在坐标系。</li><li><code>camera</code> 为相机坐标系，原点位于小孔,\(z_c\)​轴与光轴重合,\(x_c\)​轴和\(y_c\)​轴平行投影面，为上图坐标系\(X_c Y_c Z_c\)​。</li><li>归一化坐标系，原点位于\(z_c=1\),x和y轴与相机坐标系一样。</li><li><code>image</code> 为图像坐标系，原点位于光轴和投影面的交点， x轴和 y轴平行投影面，为上图坐标系 xy，相对于 <code>camera</code> 相差一个缩放(fx,fy)，同时包含畸变。</li><li><code>pixel</code> 为像素坐标系（opencv定义），从小孔向投影面方向看，投影面的左上角为原点,\(uv\) 轴和投影面两边重合，该坐标系与图像坐标系处在同一平面，但原点不同，相对于 <code>image</code> 相差一个平移(cx,cy)。</li></ul><h4 id=投影变换>投影变换</h4><ul><li><p>正投影 （空间点->图像点） <span class=tag><span class=ATTACH>ATTACH</span></span></p><ul><li><code>world</code> -> <code>camera</code></li></ul><p>设点在 <code>world</code> 中的坐标为 \(P_w = (x_w,y_w,z_w)^T\) ，在 <code>camera</code> 中的坐标为 \(P_c = (x_c,y_c,z_c)^T\)</p><p>\(\begin{bmatrix}
+<img src=/ox-hugo/_20250326_224506475a9e7c10a7df74b9d07d85cf95adce.png alt></p><p>模型中有四个坐标系，分别为 <code>world</code> ， <code>camera</code> ， <code>image</code> ， <code>pixel</code></p><ul><li><code>world</code> 为世界坐标系，可以任意指定 \(x_w\) 轴和\(y_w\)​轴，为上图P点所在坐标系。</li><li><code>camera</code> 为相机坐标系，原点位于小孔,\(z_c\)​轴与光轴重合,\(x_c\)​轴和\(y_c\)​轴平行投影面，为上图坐标系\(X_c Y_c Z_c\)​。</li><li>归一化坐标系，原点位于\(z_c=1\),x和y轴与相机坐标系一样。</li><li><code>image</code> 为图像坐标系，原点位于光轴和投影面的交点， x轴和 y轴平行投影面，为上图坐标系 xy，相对于 <code>camera</code> 相差一个缩放(fx,fy)，同时包含畸变。</li><li><code>pixel</code> 为像素坐标系（opencv定义），从小孔向投影面方向看，投影面的左上角为原点,\(uv\) 轴和投影面两边重合，该坐标系与图像坐标系处在同一平面，但原点不同，相对于 <code>image</code> 相差一个平移(cx,cy)。</li></ul><h4 id=投影变换>投影变换</h4><ul><li><p>正投影 （空间点->图像点） <span class=tag><span class=ATTACH>ATTACH</span></span></p><ul><li><code>world</code> -> <code>camera</code></li></ul><p>设点在 <code>world</code> 中的坐标为 \(P_w = (x_w,y_w,z_w)^T\) ，在 <code>camera</code> 中的坐标为 \(P_c = (x_c,y_c,z_c)^T\)</p><p>\[\begin{bmatrix}
 P_c \\
 1
 \end{bmatrix}=T_w^c
 \begin{bmatrix}
 P_w \\
 1
-\end{bmatrix}\)</p><p>其中\(T^c_w\)​为外参，即世界坐标系相对于相机坐标系的变换。</p><ul><li><p><code>camera</code> -> 归一化相机系</p><p>相机坐标系为\(F_s\)，设一平面位于相机坐标 <code>camera</code> 的 \(z=1\) 上，为归一化平面，其坐标系 \(C\) 为归一化坐标系。
-<img src=/ox-hugo/_20250326_2245156eb3c8e87889ec1f8cd506b512417325.png.png alt></p><p>根据相似三角形，P点在归一化坐标系的坐标为</p></li></ul><p>\(P_n=
+\end{bmatrix}\]</p><p>其中\(T^c_w\)​为外参，即世界坐标系相对于相机坐标系的变换。</p><ul><li><p><code>camera</code> -> 归一化相机系</p><p>相机坐标系为\(F_s\)，设一平面位于相机坐标 <code>camera</code> 的 \(z=1\) 上，为归一化平面，其坐标系 \(C\) 为归一化坐标系。
+<img src=/ox-hugo/_20250326_2245156eb3c8e87889ec1f8cd506b512417325.png.png alt></p><p>根据相似三角形，P点在归一化坐标系的坐标为</p></li></ul><p>\[P_n=
 \begin{bmatrix}
 x_c/z_c \\
 y_c/z_c \\
@@ -37,11 +37,11 @@ z_c/z_c
 x_n \\
 y_n \\
 1
-\end{bmatrix}\)</p><ul><li>归一化相机系-> <code>camera</code> -> <code>pixel</code></li></ul><link rel=stylesheet href=/css/hugo-easy-gallery.css><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png></div><a href=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png itemprop=contentUrl></a></figure></div><p>设置图像坐标系上坐标为\(P_i\)​基于图中相似三角形（一般所得图像已经经过处理，完成翻转）可得点P在图像坐标系上坐标为：
+\end{bmatrix}\]</p><ul><li>归一化相机系-> <code>camera</code> -> <code>pixel</code></li></ul><link rel=stylesheet href=/css/hugo-easy-gallery.css><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png></div><a href=/ox-hugo/_20250326_2245465a8865951f3760297e23e96323ca39bb.png.png itemprop=contentUrl></a></figure></div><p>设置图像坐标系上坐标为\(P_i\)​基于图中相似三角形（一般所得图像已经经过处理，完成翻转）可得点P在图像坐标系上坐标为：
 \(\frac{x_i}{f} = \frac{x_c}{z_c} = x_n, \frac{y_i}{f} = \frac{y_c}{z_c} = y_n\)
 设 \(\alpha\) 和 \(\beta\) 分别为x和y方向上的每米像素值，设图像中心偏移为 \([c_x,c_y​]\)，
 设像素坐标 \(P_{uv} = (u,v,1)^T\) 则
-\(u = \alpha x_i+c_x = \alpha f x_n +c_x,v = \beta y_i+c_y = \beta f y_n +c_y\)</p><p>设 \(f_x = \alpha f, f_y = \beta f\) 即</p><p>\(P_{uv}=\begin{bmatrix} f_x&amp;0&amp;c_x \\ 0&amp;f_y&amp;c_y \\ 0&amp;0&amp;1 \end{bmatrix}P_n = K P_n\)</p><p>其中K为内参数矩阵(Camera Intrinsics)。</p><p>因此 <code>world</code> 到 <code>pixel</code> 到关系为
+\(u = \alpha x_i+c_x = \alpha f x_n +c_x,v = \beta y_i+c_y = \beta f y_n +c_y\)</p><p>设 \(f_x = \alpha f, f_y = \beta f\) 即</p><p>\[P_{uv}=\begin{bmatrix} f_x&amp;0&amp;c_x \\ 0&amp;f_y&amp;c_y \\ 0&amp;0&amp;1 \end{bmatrix}P_n = K P_n\]</p><p>其中K为内参数矩阵(Camera Intrinsics)。</p><p>因此 <code>world</code> 到 <code>pixel</code> 到关系为
 \(P_{uv}=K_{3 \times 3}T^C_WP_w\)
 其中隐含了一次齐次坐标到非齐次坐标的转换，具体坐标系变换流程为</p><p>世界坐标系→相机坐标系(归一化处理)→图像坐标系→像素坐标系
 world→camrea→image→pixel
