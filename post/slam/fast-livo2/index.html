@@ -1,0 +1,105 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta property="og:site_name" content="CJ.Tong Blog"><meta property="og:type" content="article"><meta property="og:image" content="https://cjtong.space//img/home-bg-jeep.jpg"><meta property="twitter:image" content="https://cjtong.space//img/home-bg-jeep.jpg"><meta name=title content="Fast Livo2 实践"><meta property="og:title" content="Fast Livo2 实践"><meta property="twitter:title" content="Fast Livo2 实践"><meta name=description content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="og:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="twitter:description" content="程序员, 开源爱好者，生活探险家 | 这里是 CJ.Tong 的博客，与你一起发现更大的世界。"><meta property="twitter:card" content="summary"><meta name=keyword content="CjTong, cjtong, CJ.Tong, , CJ.Tong的网络日志, CJ.Tong的博客, CJ.Tong Blog, 博客, 个人网站, AI, Emacs, 自动驾驶， 机器人，智能硬件，3D打印机，智能家居'"><link rel="shortcut icon" href=/img/favicon.ico><title>Fast Livo2 实践 | CJ.Tong的博客 | CJ.Tong Blog</title>
+<link rel=canonical href=/post/slam/fast-livo2/><link rel=stylesheet href=/css/bootstrap.min.css><link rel=stylesheet href=/css/hugo-theme-cleanwhite.min.css><link rel=stylesheet href=/css/zanshang.css><link rel=stylesheet href=/css/font-awesome.all.min.css><script src=/js/jquery.min.js></script><script src=/js/bootstrap.min.js></script><script src=/js/hux-blog.min.js></script><script src=/js/lazysizes.min.js></script><script type=text/javascript async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script><script type=text/x-mathjax-config>
+    MathJax.Hub.Config({
+        tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']],
+        processEscapes: true
+        }
+    });
+    </script></head><nav class="navbar navbar-default navbar-custom navbar-fixed-top"><div class=container-fluid><div class="navbar-header page-scroll"><button type=button class=navbar-toggle>
+<span class=sr-only>Toggle navigation</span>
+<span class=icon-bar></span>
+<span class=icon-bar></span>
+<span class=icon-bar></span>
+</button>
+<a class=navbar-brand href=/>CJ.Tong Blog</a></div><div id=huxblog_navbar><div class=navbar-collapse><ul class="nav navbar-nav navbar-right"><li><a href=/>All Posts</a></li><li><a href=/archive//>ARCHIVE</a></li><li><a href=/notes//>NOTES</a></li><li><a href=/about//>ABOUT</a></li><li><a href=/search><i class="fa fa-search"></i></a></li></ul></div></div></div></nav><script>var $body=document.body,$toggle=document.querySelector(".navbar-toggle"),$navbar=document.querySelector("#huxblog_navbar"),$collapse=document.querySelector(".navbar-collapse");$toggle.addEventListener("click",handleMagic);function handleMagic(){$navbar.className.indexOf("in")>0?($navbar.className=" ",setTimeout(function(){$navbar.className.indexOf("in")<0&&($collapse.style.height="0px")},400)):($collapse.style.height="auto",$navbar.className+=" in")}</script><style type=text/css>header.intro-header{background-image:url(/img/home-bg-jeep.jpg)}</style><header class=intro-header><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><div class=post-heading><div class=tags></div><h1>Fast Livo2 实践</h1><h2 class=subheading></h2><span class=meta>Posted by
+[cjtong]
+on
+Wednesday, April 2, 2025</span></div></div></div></div></header><article><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2
+col-md-10 col-md-offset-1
+post-container"><h2 id=介绍>介绍</h2><p>FAST-LIVO2是一种高效精准的激光雷达-惯性-视觉多源融合定位与建图系统，在严重退化环境中展现出实时三维重建与机载机器人定位的显著潜力。<a href=https://github.com/hku-mars/FAST-LIVO2>https://github.com/hku-mars/FAST-LIVO2</a></p><h3 id=related-paper>Related paper</h3><p>FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry
+FAST-LIVO: Fast and Tightly-coupled Sparse-Direct LiDAR-Inertial-Visual Odometry</p><h2 id=系统环境和依赖>系统环境和依赖</h2><h3 id=ubuntu-and-ros>Ubuntu and ROS</h3><p>Ubuntu 20.04. ROS noetic.</p><h3 id=pcl-and-and-eigen-and-and-opencv>PCL && Eigen && OpenCV</h3><p>PCL=1.10, Follow PCL Installation.
+Eigen>=3.3.4, Follow Eigen Installation.
+OpenCV>=4.2, Follow Opencv Installation.</p><h3 id=sophus>Sophus</h3><p>Sophus Installation for the non-templated/double-only version.</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>git clone https://github.com/strasdat/Sophus.git
+</span></span><span style=display:flex><span><span style=color:#111>cd</span> Sophus
+</span></span><span style=display:flex><span>git checkout a621ff
+</span></span><span style=display:flex><span>mkdir build <span style=color:#f92672>&amp;&amp;</span> <span style=color:#111>cd</span> build <span style=color:#f92672>&amp;&amp;</span> cmake ..
+</span></span><span style=display:flex><span>make
+</span></span><span style=display:flex><span>sudo make install</span></span></code></pre></div><h3 id=vikit>Vikit</h3><p>Vikit contains camera models, some math and interpolation functions that we need. Vikit is a catkin project, therefore, download it into your catkin workspace source folder.</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#111>cd</span> catkin_ws/src
+</span></span><span style=display:flex><span>git clone https://github.com/xuankuzcr/rpg_vikit.git</span></span></code></pre></div><h3 id=livox-ros-driver>livox_ros_driver</h3><p>Follow livox_ros_driver Installation.</p><h2 id=编译>编译</h2><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#111>cd</span> ~/catkin_ws/src
+</span></span><span style=display:flex><span>git clone https://github.com/hku-mars/FAST-LIVO2
+</span></span><span style=display:flex><span><span style=color:#111>cd</span> ../
+</span></span><span style=display:flex><span>catkin_make
+</span></span><span style=display:flex><span><span style=color:#111>source</span> ~/catkin_ws/devel/setup.bash</span></span></code></pre></div><h2 id=运行数据集>运行数据集 <span class=tag><span class=ATTACH>ATTACH</span></span></h2><p>Download our collected rosbag files via OneDrive (FAST-LIVO2-Dataset).</p><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>roslaunch fast_livo mapping_avia.launch
+</span></span><span style=display:flex><span>rosbag play YOUR_DOWNLOADED.bag</span></span></code></pre></div><link rel=stylesheet href=/css/hugo-easy-gallery.css><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250402_134149screenshot.png></div><a href=/ox-hugo/_20250402_134149screenshot.png itemprop=contentUrl></a></figure></div><div class=box><figure itemprop=associatedMedia itemscope itemtype=http://schema.org/ImageObject><div class=img><img itemprop=thumbnail src=/ox-hugo/_20250402_134211screenshot.png></div><a href=/ox-hugo/_20250402_134211screenshot.png itemprop=contentUrl></a></figure></div><h2 id=问题>问题</h2><ol><li>使用catkin build用户希望安装到install目录，需要对vikit进行改造一下</li></ol><div class=highlight><pre tabindex=0 style=color:#272822;background-color:#fafafa;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-diff data-lang=diff><span style=display:flex><span>modified   vikit_common/CMakeLists.txt
+</span></span><span style=display:flex><span>@@ -44,9 +44,10 @@ IF(USE_ROS)
+</span></span><span style=display:flex><span>   FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp cmake_modules)
+</span></span><span style=display:flex><span>   LIST(APPEND INCLUDE_DIRECTORIES ${catkin_INCLUDE_DIRS})
+</span></span><span style=display:flex><span>   catkin_package(
+</span></span><span style=display:flex><span>+    INCLUDE_DIRS include/vikit
+</span></span><span style=display:flex><span>+    # include/vikit ${CMAKE_INSTALL_PREFIX}/include/vikit
+</span></span><span style=display:flex><span>     DEPENDS Eigen OpenCV Sophus
+</span></span><span style=display:flex><span>     CATKIN_DEPENDS roscpp
+</span></span><span style=display:flex><span>-    INCLUDE_DIRS include
+</span></span><span style=display:flex><span>     LIBRARIES ${PROJECT_NAME}
+</span></span><span style=display:flex><span>   )
+</span></span><span style=display:flex><span> ELSE()
+</span></span><span style=display:flex><span>@@ -103,4 +104,11 @@ IF(NOT USE_ROS)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   INSTALL(DIRECTORY include/vikit DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN &#34;*.h&#34; )
+</span></span><span style=display:flex><span>   INSTALL(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+</span></span><span style=display:flex><span>-ENDIF()
+</span></span><span style=display:flex><span>\ No newline at end of file
+</span></span><span style=display:flex><span>+ELSE()
+</span></span><span style=display:flex><span>+  message(&#34;install:${CMAKE_INSTALL_PREFIX}&#34;)
+</span></span><span style=display:flex><span>+  message(${CATKIN_DEVEL_PREFIX})
+</span></span><span style=display:flex><span>+  # message(${CATKIN_DEVEL_INCLUDE_DESTINATION})
+</span></span><span style=display:flex><span>+  INSTALL(DIRECTORY include/vikit DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN &#34;*.h&#34; )
+</span></span><span style=display:flex><span>+  INSTALL(DIRECTORY include/vikit DESTINATION ${CATKIN_DEVEL_PREFIX}/include FILES_MATCHING PATTERN &#34;*.h&#34; )
+</span></span><span style=display:flex><span>+  INSTALL(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+</span></span><span style=display:flex><span>+ENDIF()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>modified   vikit_ros/CMakeLists.txt
+</span></span><span style=display:flex><span>@@ -34,7 +34,7 @@ INCLUDE_DIRECTORIES(
+</span></span><span style=display:flex><span> catkin_package(
+</span></span><span style=display:flex><span>     DEPENDS EIGEN3 OpenCV Sophus vikit_common
+</span></span><span style=display:flex><span>     CATKIN_DEPENDS roscpp visualization_msgs tf
+</span></span><span style=display:flex><span>-    INCLUDE_DIRS include
+</span></span><span style=display:flex><span>+    INCLUDE_DIRS include/vikit
+</span></span><span style=display:flex><span>     LIBRARIES ${PROJECT_NAME}
+</span></span><span style=display:flex><span> )
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>@@ -49,4 +49,9 @@ TARGET_LINK_LIBRARIES(
+</span></span><span style=display:flex><span>   ${PROJECT_NAME}
+</span></span><span style=display:flex><span>   ${OpenCV_LIBS}
+</span></span><span style=display:flex><span>   ${Sophus_LIBRARIES}
+</span></span><span style=display:flex><span>-  ${catkin_LIBRARIES})
+</span></span><span style=display:flex><span>\ No newline at end of file
+</span></span><span style=display:flex><span>+  ${catkin_LIBRARIES})
+</span></span><span style=display:flex><span>+
+</span></span><span style=display:flex><span>+INSTALL(DIRECTORY include/vikit DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN &#34;*.h&#34; )
+</span></span><span style=display:flex><span>+
+</span></span><span style=display:flex><span>+
+</span></span><span style=display:flex><span>+INSTALL(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+</span></span><span style=display:flex><span>modified   vikit_ros/include/vikit/camera_loader.h
+</span></span></code></pre></div><ol><li>vikit默认camera使用5参数，其他参数没有支持</li></ol><h2 id=心得体会>心得体会</h2><ol><li>郑博团队非常友善，githhub issuses 很及时回复 👍</li></ol><div class="entry-shang text-center"><p>「真诚赞赏，手留余香」</p><button class="zs show-zs btn btn-bred">赞赏支持</button></div><div class=zs-modal-bg></div><div class=zs-modal-box><div class=zs-modal-head><button type=button class=close>×</button>
+<span class=author><a href=https://cjtong.space/><img src=/img/favicon.png>CJ.Tong Blog</a></span><p class=tip><i></i><span>真诚赞赏，手留余香</span></p></div><div class=zs-modal-body><div class=zs-modal-btns><button class="btn btn-blink" data-num=2>2元</button>
+<button class="btn btn-blink" data-num=5>5元</button>
+<button class="btn btn-blink" data-num=10>10元</button>
+<button class="btn btn-blink" data-num=50>50元</button>
+<button class="btn btn-blink" data-num=100>100元</button>
+<button class="btn btn-blink" data-num=1>任意金额</button></div><div class=zs-modal-pay><button class="btn btn-bred" id=pay-text>2元</button><p>使用<span id=pay-type>微信</span>扫描二维码完成支付</p><img src=/img/reward/wechat-2.png id=pay-image></div></div><div class=zs-modal-footer><label><input type=radio name=zs-type value=wechat class=zs-type checked><span><span class=zs-wechat><img src=/img/reward/wechat-btn.png></span></label>
+<label><input type=radio name=zs-type value=alipay class=zs-type class=zs-alipay><img src=/img/reward/alipay-btn.png></span></label></div></div><script type=text/javascript src=/js/reward.js></script><hr><ul class=pager><li class=previous><a href=/post/slam/direct_visual_lidar_calib/ data-toggle=tooltip data-placement=top title="Direct Visual Lidar Calib 实践">&larr;
+Previous Post</a></li></ul><div id=disqus-comment></div><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//blog-threemen-tech.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><div class="col-lg-2 col-lg-offset-0
+visible-lg-block
+sidebar-container
+catalog-container"><div class=side-catalog><hr class="hidden-sm hidden-xs"><h5><a class=catalog-toggle href=#>CATALOG</a></h5><ul class=catalog-body></ul></div></div><div class="col-lg-8 col-lg-offset-2
+col-md-10 col-md-offset-1
+sidebar-container"><section><hr class="hidden-sm hidden-xs"><h5><a href=/tags/>FEATURED TAGS</a></h5><div class=tags></div></section><section><hr><h5>FRIENDS</h5><ul class=list-inline><li><a target=_blank href=https://zhaozhihan.com>Linda的博客</a></li></ul></section></div></div></div></article><footer><div class=container><div class=row><div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1"><ul class="list-inline text-center"><li><a href=mailto:youremail@gmail.com><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fas fa-envelope fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=/img/wechat_qrcode.png><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fab fa-weixin fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=https://github.com/improve100><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fab fa-github fa-stack-1x fa-inverse"></i></span></a></li><li><a target=_blank href=https://stackoverflow.com/users/yourstackoverflowid><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fab fa-stack-overflow fa-stack-1x fa-inverse"></i></span></a></li><li><a href rel=alternate type=application/rss+xml title="CJ.Tong Blog"><span class="fa-stack fa-lg"><i class="fas fa-circle fa-stack-2x"></i>
+<i class="fas fa-rss fa-stack-1x fa-inverse"></i></span></a></li></ul><p class="copyright text-muted">Copyright &copy; CJ.Tong Blog 2025<br><a href=https://themes.gohugo.io/hugo-theme-cleanwhite>CleanWhite Hugo Theme</a> by <a href=https://zhaohuabing.com>Huabing</a> |
+<iframe style=margin-left:2px;margin-bottom:-5px frameborder=0 scrolling=0 width=100px height=20px src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true"></iframe></p></div></div></div></footer><script>function loadAsync(e,t){var s=document,o="script",n=s.createElement(o),i=s.getElementsByTagName(o)[0];n.src=e,t&&n.addEventListener("load",function(e){t(null,e)},!1),i.parentNode.insertBefore(n,i)}</script><script>$("#tag_cloud").length!==0&&loadAsync("/js/jquery.tagcloud.js",function(){$.fn.tagcloud.defaults={color:{start:"#bbbbee",end:"#0085a1"}},$("#tag_cloud a").tagcloud()})</script><script>loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js",function(){var e=document.querySelector("nav");e&&FastClick.attach(e)})</script><script type=text/javascript>function generateCatalog(e){_containerSelector="div.post-container";var t,n,s,o,i,a=$(_containerSelector),r=a.find("h1,h2,h3,h4,h5,h6");return $(e).html(""),r.each(function(){n=$(this).prop("tagName").toLowerCase(),o="#"+$(this).prop("id"),t=$(this).text(),i=$('<a href="'+o+'" rel="nofollow" title="'+t+'">'+t+"</a>"),s=$('<li class="'+n+'_nav"></li>').append(i),$(e).append(s)}),!0}generateCatalog(".catalog-body"),$(".catalog-toggle").click(function(e){e.preventDefault(),$(".side-catalog").toggleClass("fold")}),loadAsync("/js/jquery.nav.js",function(){$(".catalog-body").onePageNav({currentClass:"active",changeHash:!1,easing:"swing",filter:"",scrollSpeed:700,scrollOffset:0,scrollThreshold:.2,begin:null,end:null,scrollChange:null,padding:80})})</script></body></html>
